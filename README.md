@@ -1,37 +1,53 @@
-#  ControleDeEstoque_python
+# Controle de Estoque — Python
 
+## 1. Visão geral
 
+O **Controle de Estoque** é uma aplicação desenvolvida em **Python** para gerenciamento básico de produtos. O sistema permite cadastrar produtos, consultar o estoque, alterar informações, retirar quantidades e excluir produtos.
 
-Sistema de controle de estoque desenvolvido em **Python** com arquitetura **MVC** (Model-View-Controller) e **interface de contrato (ABC)**. Inclui uma versão console funcional e um **dashboard web** para demonstração visual do projeto.
+A aplicação possui **duas interfaces**:
 
----
+- **Interface via terminal** (`MenuEstoque.py`) — aplicação principal, totalmente funcional;
+- **Dashboard web** (`dashboard.html`) — interface visual moderna **para fins de demonstração**, porém já funcional em seu estado atual.
 
-## 📋 Índice
-
-- [Sobre o projeto](#-sobre-o-projeto)
-- [Arquitetura](#-arquitetura)
-- [Estrutura de pastas](#-estrutura-de-pastas)
-- [Como executar](#-como-executar)
-- [Dashboard Web (demonstração)](#-dashboard-web-demonstração)
-- [API REST (opcional)](#-api-rest-opcional)
-- [Tecnologias](#-tecnologias)
-- [Funcionalidades](#-funcionalidades)
-- [Autor](#-autor)
+O projeto utiliza uma arquitetura baseada em **MVC (Model-View-Controller)** com uma camada adicional de abstração: uma **interface de contrato** (`IEstoque`) implementada por meio de **ABC (Abstract Base Class)**, equivalente ao `interface` do Java.
 
 ---
 
-## 🎯 Sobre o projeto
+## 2. Requisitos
 
-Este projeto implementa um **sistema de controle de estoque** com as seguintes características:
+### Software
 
-- **Arquitetura MVC** — separação clara entre Model, View e Controller
-- **Interface de contrato** (`IEstoque`) usando **Abstract Base Class (ABC)** — equivalente ao `interface` do Java
-- **CRUD completo** de produtos: adicionar, listar, buscar, alterar, retirar e deletar
-- **Versão console** funcional via `MenuEstoque`
-- **Dashboard web** moderno para demonstração visual (HTML/CSS/JS)
+- **Python 3.10 ou superior** (obrigatório por causa do `match/case` utilizado no menu)
+- Navegador moderno (para visualizar o dashboard, opcional)
+- Flask e Flask-CORS (opcionais, apenas para integração via API REST)
+
+### Hardware
+
+Não há requisitos específicos de hardware. O sistema possui baixo consumo de recursos e pode ser executado em computadores convencionais.
 
 ---
 
-## 🏗️ Arquitetura
+## 3. Estrutura do projeto
 
-O projeto segue o padrão **MVC** com uma camada extra de abstração via **interface**:
+```text
+ControleDeEstoque_python/
+└── src/
+    ├── Main.py
+    ├── app.py
+    │
+    ├── model/
+    │   ├── __init__.py
+    │   └── Produto.py
+    │
+    ├── controller/
+    │   ├── __init__.py
+    │   ├── IEstoque.py
+    │   └── ControleDeEstoque.py
+    │
+    ├── view/
+    │   ├── __init__.py
+    │   ├── MenuEstoque.py
+    │   └── DashboardEstoque.py
+    │
+    └── static/
+        └── dashboard.html
