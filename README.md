@@ -1,6 +1,6 @@
-# ControleDeEstoque_python
+#  ControleDeEstoque_python
 
-# 📦 Controle de Estoque — Sistema Operacional
+
 
 Sistema de controle de estoque desenvolvido em **Python** com arquitetura **MVC** (Model-View-Controller) e **interface de contrato (ABC)**. Inclui uma versão console funcional e um **dashboard web** para demonstração visual do projeto.
 
