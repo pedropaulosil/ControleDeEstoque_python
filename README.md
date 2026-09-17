@@ -4,24 +4,6 @@ Sistema de controle de estoque desenvolvido em **Python** com arquitetura **MVC*
 
 ---
 
-## 📋 Índice
-
-- [Visão geral](#-visão-geral)
-- [Requisitos](#-requisitos)
-- [Estrutura do projeto](#-estrutura-do-projeto)
-- [Arquitetura](#-arquitetura)
-- [Funcionalidades](#-funcionalidades)
-- [Como executar](#-como-executar)
-- [Dashboard web](#-dashboard-web)
-- [API REST](#-api-rest)
-- [Tratamento de operações](#-tratamento-de-operações)
-- [Limitações atuais](#-limitações-atuais)
-- [Possíveis evoluções](#-possíveis-evoluções)
-- [Comparativo Java × Python](#-comparativo-java--python)
-- [Tecnologias](#-tecnologias)
-
----
-
 ## 🎯 Visão geral
 
 O **Controle de Estoque** é uma aplicação para gerenciamento básico de produtos. O sistema permite:
