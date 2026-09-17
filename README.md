@@ -1,35 +1,46 @@
-# Controle de Estoque — Python
+📦 Controle de Estoque — Python
 
-## 1. Visão geral
+Sistema de controle de estoque desenvolvido em Python utilizando arquitetura MVC (Model-View-Controller) e interfaces de contrato com ABC (Abstract Base Class). O projeto oferece uma versão principal em terminal, uma interface desktop opcional e um dashboard web integrado a uma API REST desenvolvida com Flask.
 
-O **Controle de Estoque** é uma aplicação desenvolvida em **Python** para gerenciamento básico de produtos. O sistema permite cadastrar produtos, consultar o estoque, alterar informações, retirar quantidades e excluir produtos.
+📋 Índice
+#-visão-geral
+#️-requisitos
+#-estrutura-do-projeto
+#️-arquitetura
+#-funcionalidades
+#-como-executar
+#-dashboard-web
+#-api-rest
+#-tratamento-de-operações
+#️-limitações-atuais
+#-possíveis-evoluções
+#-comparativo-java--python
+#️-tecnologias
+🎯 Visão Geral
 
-A aplicação possui **duas interfaces**:
+O Controle de Estoque é uma aplicação para gerenciamento de produtos que permite realizar operações comuns de estoque de forma simples e organizada.
 
-- **Interface via terminal** (`MenuEstoque.py`) — aplicação principal, totalmente funcional;
-- **Dashboard web** (`dashboard.html`) — interface visual moderna **para fins de demonstração**, porém já funcional em seu estado atual.
+Funcionalidades principais
+Cadastro de produtos
+Consulta do estoque completo
+Busca de produtos por nome
+Alteração de dados de produtos
+Retirada de itens do estoque
+Exclusão de produtos
+Visualização de métricas do estoque
+Integração com API REST
+Interfaces disponíveis
+Interface	Arquivo	DescriçãoTerminal	MenuEstoque.py	Aplicação principal totalmente funcional
+Dashboard Web	static/dashboard.html	Interface visual moderna para demonstração e integração
+Desktop	DashboardEstoque.py	Aplicação desktop usando CustomTkinter
 
-O projeto utiliza uma arquitetura baseada em **MVC (Model-View-Controller)** com uma camada adicional de abstração: uma **interface de contrato** (`IEstoque`) implementada por meio de **ABC (Abstract Base Class)**, equivalente ao `interface` do Java.
+O sistema segue o padrão MVC, utilizando uma camada adicional de abstração através da interface IEstoque, implementada com ABC (Abstract Base Class).
 
----
+Hardware
 
-## 2. Requisitos
+Não existem requisitos específicos. O sistema possui baixo consumo de recursos e pode ser executado em qualquer computador moderno.
 
-### Software
-
-- **Python 3.10 ou superior** (obrigatório por causa do `match/case` utilizado no menu)
-- Navegador moderno (para visualizar o dashboard, opcional)
-- Flask e Flask-CORS (opcionais, apenas para integração via API REST)
-
-### Hardware
-
-Não há requisitos específicos de hardware. O sistema possui baixo consumo de recursos e pode ser executado em computadores convencionais.
-
----
-
-## 3. Estrutura do projeto
-
-```text
+📁 Estrutura do Projeto
 ControleDeEstoque_python/
 └── src/
     ├── Main.py
@@ -52,430 +63,343 @@ ControleDeEstoque_python/
     └── static/
         └── dashboard.html
 
+Observação
 
-Controller
-Responsável pelas operações e regras relacionadas ao estoque.
+Os arquivos abaixo devem existir vazios para que os diretórios sejam reconhecidos como pacotes Python:
 
-IEstoque.py
+model/__init__.py
+controller/__init__.py
+view/__init__.py
 
-Define o contrato (interface) que qualquer implementação de controle de estoque deve seguir. Utiliza ABC e @abstractmethod. Métodos obrigatórios:
+🏗️ Arquitetura
 
-Método	Descrição
-adicionarProduto(nome, quantidade, preco, categoria)	Adiciona um novo produto
-getProdutos()	Retorna a lista de produtos
-estoqueVazio()	Verifica se o estoque está vazio
-buscarProduto(nome)	Busca produto pelo nome
-retirarProduto(nome, quantidade)	Retira quantidade do estoque
-alterarEstoque(nome, novoNome, novaQuantidade)	Altera dados do produto
-deletarProduto(nome)	Remove produto do estoque
-ControleDeEstoque.py
+O projeto segue o padrão MVC com uma camada extra de contrato baseada em interface.
 
-Implementa a interface IEstoque. Gerencia a lista de produtos e executa as operações de inclusão, busca, alteração, retirada e exclusão.
+Usuário
+   ↓
+MenuEstoque / DashboardEstoque / dashboard.html
+   ↓
+ControleDeEstoque ─── implementa ───▶ IEstoque (ABC)
+   ↓
+Produto
+
+Camadas da aplicação
+Camada	ResponsabilidadeModel	Representação dos dados
+View	Interação com o usuário
+Controller	Regras de negócio
+Interface	Contrato obrigatório dos métodos
+Arquivos por camada
 
 Model
+
 Produto.py
 
-Representa um produto armazenado no sistema.
-
-Possui os seguintes atributos:
-
-Atributo	Tipo	Descrição
-nome	str	Nome do produto
-quantidade	int	Quantidade disponível
-preco	float	Preço unitário (opcional)
-categoria	str	Categoria do produto
 View
-Responsável pela interação com o usuário.
 
 MenuEstoque.py
-
-Interface via terminal. Exibe o menu, recebe os dados digitados, realiza validações de entrada e solicita ao Controller a execução das operações. Utiliza match/case para o roteamento das opções do menu.
-
 DashboardEstoque.py
+dashboard.html
 
-Interface gráfica via CustomTkinter, com o mesmo design visual do dashboard web. Serve como alternativa nativa para ambientes desktop.
+Controller
 
-Main.py
+ControleDeEstoque.py
 
-Ponto de entrada da aplicação. Responsável por iniciar a interface do sistema.
+Interface
 
-4. Funcionalidades
-Adicionar item
-Cadastra um novo produto no estoque informando seu nome, quantidade, preço e categoria.
+IEstoque.py
+📜 Interface IEstoque
 
-O nome do produto passa por uma validação para impedir o uso de números e símbolos, permitindo apenas letras e espaços.
+A interface IEstoque define o contrato obrigatório que qualquer implementação de controle de estoque deve seguir.
 
-Método: adicionarProdutos()
+Métodos obrigatórios
+Método	DescriçãoadicionarProduto()	Adiciona um novo produto
+getProdutos()	Retorna todos os produtos
+estoqueVazio()	Verifica se existem itens cadastrados
+buscarProduto()	Busca um produto pelo nome
+retirarProduto()	Remove quantidade do estoque
+alterarEstoque()	Atualiza dados do produto
+deletarProduto()	Remove produto do estoque
+Exemplo da interface
+from abc import ABC, abstractmethod
 
-Ver estoque
-Exibe todos os produtos cadastrados e suas respectivas quantidades.
+class IEstoque(ABC):
 
-Caso não existam produtos cadastrados, o sistema informa que o estoque está vazio.
+    @abstractmethod
+    def adicionarProduto(self, nome, quantidade):
+        pass
 
-Métodos utilizados:
+Implementação
+class ControleDeEstoque(IEstoque):
+
+    def adicionarProduto(self, nome, quantidade):
+        pass
+
+
+Essa abordagem é equivalente ao padrão interface + implements utilizado em Java.
+
+✅ Funcionalidades
+➕ Adicionar Produto
+
+Permite cadastrar um produto informando:
+
+Nome
+Quantidade
+Preço
+Categoria
+
+Validações:
+
+Apenas letras e espaços são permitidos no nome.
+Não permite entradas inválidas para quantidade ou preço.
+
+Método utilizado
+
+adicionarProduto()
+
+📦 Visualizar Estoque
+
+Exibe todos os produtos cadastrados.
+
+Caso não existam produtos, o sistema informa que o estoque está vazio.
+
+Métodos utilizados
 
 estoqueVazio()
-
 getProdutos()
 
-Alterar item
-Permite alterar o nome e a quantidade de um produto existente.
+✏️ Alterar Produto
 
-Método: alterarEstoque(nome, novoNome, novaQuantidade)
+Permite modificar:
 
-O sistema procura o produto pelo nome informado e, caso ele exista, atualiza seus dados.
+Nome
+Quantidade
 
-Após realizar uma alteração, o sistema permite que o usuário escolha se deseja alterar outro item, podendo repetir a operação enquanto responder sim.
+Método
 
-Retirar item
+alterarEstoque(nome, novoNome, novaQuantidade)
+
+
+Caso o produto exista, as alterações são realizadas imediatamente.
+
+➖ Retirar Produto
+
 Reduz a quantidade disponível de um produto.
 
-Método: retirarProduto(nome, quantidade)
+Método
 
-A operação não é realizada caso o produto não exista ou a quantidade solicitada seja superior à quantidade disponível.
+retirarProduto(nome, quantidade)
 
-Deletar item
+
+Validações:
+
+Produto deve existir.
+Quantidade solicitada não pode ser maior que a disponível.
+🗑️ Deletar Produto
+
 Remove completamente um produto do estoque.
 
-Método: deletarProduto(nome)
+Método
 
-5. Interface do sistema
-5.1 Interface via terminal
-Ao iniciar a aplicação, é apresentado o seguinte menu:
+deletarProduto(nome)
 
-text
+🔎 Buscar Produto
+
+Localiza um produto através do nome.
+
+Método
+
+buscarProduto(nome)
+
+🚀 Como Executar
+Versão Console (Principal)
+cd ControleDeEstoque_python/src
+python Main.py
+
+Menu Principal
 ============ CONTROLE DE ESTOQUE =============
+
 ESCOLHA A FUNCIONALIDADE QUE DESEJA ACESSAR:
+
 1 - ADICIONAR ITEM
 2 - VER ESTOQUE
 3 - ALTERAR ITEM DO ESTOQUE
 4 - RETIRAR ITEM
 5 - DELETAR ITEM
 0 - SAIR DO PROGRAMA
-O usuário seleciona uma opção digitando o número correspondente.
 
-Na opção de alteração, após modificar um produto, o sistema pergunta se o usuário deseja alterar outro item.
+🎨 Dashboard Web
 
-5.2 Dashboard web (demonstração)
-⚠️ Observação: O arquivo dashboard.html é destinado exclusivamente à demonstração visual do projeto. Ele não substitui a aplicação principal em Python, servindo como protótipo de interface moderna para apresentação.
+O dashboard web foi desenvolvido para fornecer uma visualização moderna do sistema.
 
-Entretanto, o dashboard já se encontra funcional: todos os botões (Adicionar, Alterar, Retirar, Buscar, Deletar) executam ações reais no estado local, atualizam a lista de produtos, o log de operações e as métricas em tempo real.
+Modo Demonstração
+# Windows
+start static/dashboard.html
 
-Para abrir o dashboard, basta executar:
+# macOS
+open static/dashboard.html
 
-bash
-start static/dashboard.html      # Windows
-open static/dashboard.html       # macOS
-xdg-open static/dashboard.html   # Linux
-Características do dashboard:
+# Linux
+xdg-open static/dashboard.html
 
-Tema dark mode com acento verde-menta único
+Modo Integrado
 
-Tipografia editorial (Playfair Display para títulos, JetBrains Mono para dados)
+Execute o servidor Flask:
 
-Layout em grid com hierarquia clara (header → métricas → ações → lista → log)
-
-Cinco botões funcionais que abrem modais para execução de cada operação
-
-Log de operações em tempo real
-
-Métricas agregadas (total de itens, valor em estoque, itens em atenção)
-
-6. Fluxo da aplicação
-A aplicação segue o fluxo:
-
-text
-Usuário
-   ↓
-MenuEstoque / DashboardEstoque
-   ↓
-ControleDeEstoque  ──── implementa ──▶  IEstoque (ABC)
-   ↓
-Produto
-A View recebe a entrada do usuário e encaminha a solicitação para o Controller. O Controller executa a operação sobre os objetos Produto armazenados na lista.
-
-7. Armazenamento dos dados
-Os produtos são armazenados em memória utilizando uma lista Python:
-
-python
-self.produtos = []
-Os dados permanecem disponíveis enquanto o programa estiver em execução.
-
-Observação: a versão atual não utiliza banco de dados ou armazenamento permanente. Ao encerrar o programa, os produtos cadastrados são perdidos.
-
-8. Interface e arquitetura
-O projeto utiliza MVC com uma camada adicional de contrato:
-
-Model: representa os dados (Produto);
-
-View: interação com o usuário (MenuEstoque, DashboardEstoque e Main);
-
-Controller: gerenciamento e regras do estoque (ControleDeEstoque);
-
-Interface: contrato de métodos obrigatórios (IEstoque).
-
-A MenuEstoque utiliza uma instância de ControleDeEstoque para encaminhar as operações realizadas pelo usuário, mantendo a separação entre a interface e o gerenciamento dos dados.
-
-Interface de contrato (ABC)
-Em Python, a interface é definida da seguinte forma:
-
-python
-from abc import ABC, abstractmethod
-
-class IEstoque(ABC):
-    @abstractmethod
-    def adicionarProduto(self, nome, quantidade):
-        pass
-    # ...
-E implementada por:
-
-python
-class ControleDeEstoque(IEstoque):
-    def adicionarProduto(self, nome, quantidade):
-        # ...
-Essa construção é equivalente ao par interface / implements do Java.
-
-9. Execução
-Versão terminal
-Abra o terminal no diretório src/.
-
-Execute:
-
-bash
-python Main.py
-Utilize o menu exibido no terminal para realizar as operações.
-
-Versão com API REST (opcional)
-Instale as dependências:
-
-bash
-pip install flask flask-cors
-Execute:
-
-bash
 python app.py
-Acesse http://localhost:5000 no navegador.
 
-Endpoints da API
-Método	Rota	Descrição
-GET	/api/produtos	Lista todos os produtos
-POST	/api/produtos	Adiciona novo produto
-GET	/api/produtos/<nome>	Busca produto por nome
-PUT	/api/produtos/<nome>	Altera produto
+
+Depois acesse:
+
+http://localhost:5000
+
+Recursos do Dashboard
+🌙 Tema Dark Mode
+🎨 Destaque visual verde-menta
+📊 Métricas de estoque em tempo real
+📝 Log de operações
+🔎 Busca de produtos
+➕ Adição de produtos
+✏️ Alteração de produtos
+➖ Retirada de itens
+🗑️ Exclusão de produtos
+🔄 Atualização automática dos dados
+Comportamento Inteligente
+
+O dashboard identifica automaticamente o ambiente:
+
+Executado pelo navegador → utiliza armazenamento local.
+Executado via Flask → consome a API REST.
+🔌 API REST
+Executar API
+pip install flask flask-cors
+
+cd ControleDeEstoque_python/src
+
+python app.py
+
+Endpoints
+Método	Rota	DescriçãoGET	/api/produtos	Lista produtos
+POST	/api/produtos	Cria produto
+GET	/api/produtos/<nome>	Busca produto
+PUT	/api/produtos/<nome>	Atualiza produto
 POST	/api/produtos/<nome>/retirar	Retira quantidade
-DELETE	/api/produtos/<nome>	Remove produto
-GET	/api/metricas	Retorna métricas agregadas
-10. Tratamento das operações
-O sistema utiliza valores booleanos para informar o resultado de algumas operações.
+DELETE	/api/produtos/<nome>	Exclui produto
+GET	/api/metricas	Retorna métricas
+Exemplos
 
-Por exemplo:
+Listar produtos:
 
-python
+curl http://localhost:5000/api/produtos
+
+
+Adicionar produto:
+
+curl -X POST http://localhost:5000/api/produtos \
+-H "Content-Type: application/json" \
+-d '{
+    "nome":"Headset",
+    "quantidade":10,
+    "preco":249.90,
+    "categoria":"Perifericos"
+}'
+
+
+Retirar produto:
+
+curl -X POST http://localhost:5000/api/produtos/Headset/retirar \
+-H "Content-Type: application/json" \
+-d '{
+    "quantidade":2
+}'
+
+🔄 Tratamento de Operações
+
+As operações retornam valores booleanos indicando sucesso ou falha.
+
 sucesso = controller.retirarProduto(nome, quantidade)
-O retorno True indica que a operação foi realizada. O retorno False indica que a operação não pôde ser realizada, como no caso de um produto inexistente ou quantidade insuficiente.
 
-O sistema também verifica se o estoque está vazio antes de executar operações que dependem da existência de produtos.
+Retornos
+True
 
-Tratamento de exceções
-Entradas numéricas são tratadas com try/except ValueError, evitando que o programa seja encerrado por digitação incorreta.
 
-11. Limitações atuais
-Os dados são armazenados somente em memória.
+Operação realizada com sucesso.
 
-Não há persistência em banco de dados.
+False
 
-Não existe autenticação de usuários.
 
-A interface principal é executada exclusivamente pelo terminal.
+Operação falhou devido a:
 
-O dashboard web é uma demonstração e não está conectado ao back-end Python por padrão.
+Produto inexistente
+Quantidade insuficiente
+Operação inválida
+Tratamento de Exceções
 
-A validação de entrada é limitada aos campos atualmente tratados pela interface.
+Entradas numéricas são protegidas com:
 
-12. Possíveis evoluções
-O sistema pode ser posteriormente expandido para incluir:
+try:
+    quantidade = int(input())
+except ValueError:
+    print("Valor inválido")
 
-Persistência em banco de dados (SQLite, PostgreSQL);
 
-Integração completa entre dashboard web e back-end Flask;
+Isso evita encerramentos inesperados da aplicação.
 
-Cadastro de usuários e níveis de acesso;
+⚠️ Limitações Atuais
+Dados armazenados apenas em memória
+Não utiliza banco de dados
+Não possui autenticação
+Sem controle de permissões
+Interface principal baseada em terminal
+Dashboard web voltado para demonstração
+Validações básicas de entrada
+🔮 Possíveis Evoluções
+Persistência com SQLite
+Persistência com PostgreSQL
+Integração completa com Flask
+Controle de usuários e perfis
+Gestão de fornecedores
+Histórico de movimentações
+Exportação CSV
+Exportação PDF
+Alertas de estoque mínimo
+Testes automatizados com Pytest
+Dockerização da aplicação
+Pipeline CI/CD
+☕ Comparativo Java × Python
+Conceito	Java	PythonInterface	interface	ABC
+Implementação	implements	Herança
+Método abstrato	abstract	@abstractmethod
+Encapsulamento	Forte	Convencional
+Verbosidade	Alta	Baixa
+Curva de aprendizado	Média	Baixa
 
-Controle de fornecedores;
+Exemplo Java:
 
-Histórico de movimentações com data e hora;
+public interface IEstoque {
+    void adicionarProduto(String nome, int quantidade);
+}
 
-Relatórios de estoque (CSV, PDF);
 
-Alertas automáticos de estoque mínimo;
+Equivalente em Python:
 
-Testes automatizados com pytest.
-
-13. Comparativo Java × Python
-O projeto foi originalmente concebido em Java e posteriormente portado para Python. As principais adaptações foram:
-
-Java	Python
-interface IEstoque	class IEstoque(ABC)
-implements IEstoque	class ControleDeEstoque(IEstoque)
-@Override	(opcional, apenas documentação)
-ArrayList<Produto>	list
-switch/case	match/case (Python 3.10+)
-Scanner	input()
-Getters/Setters explícitos	Atributos diretos ou @property
-System.out.println()	print()
-Thread.sleep(1000)	time.sleep(1)
-text
-
----
-
-## 📄 `model/__init__.py`
-
-```python
-(arquivo vazio)
-
-📄 model/Produto.py
-python
-class Produto:
-
-    def __init__(self, nome, quantidade, preco=0.0, categoria="Geral"):
-        self.nome = nome
-        self.quantidade = quantidade
-        self.preco = preco
-        self.categoria = categoria
-        # define o escopo (classe) dos obj
-
-    def getNome(self):
-        return self.nome
-
-    def getQuantidade(self):
-        return self.quantidade
-
-    def setNome(self, nome):
-        self.nome = nome
-
-    def setQuantidade(self, quantidade):
-        self.quantidade = quantidade
-        # getters e setters
-
-    def to_dict(self):
-        """Converte o produto em dicionário — usado pela API REST."""
-        return {
-            "nome": self.nome,
-            "quantidade": self.quantidade,
-            "preco": self.preco,
-            "categoria": self.categoria,
-            "sku": str(hash(self.nome) % 10000).zfill(4),
-        }
-📄 controller/__init__.py
-python
-(arquivo vazio)
-
-📄 controller/IEstoque.py
-python
 from abc import ABC, abstractmethod
 
-
 class IEstoque(ABC):
-    """
-    Interface (contrato) que define os métodos obrigatórios
-    para qualquer implementação de controle de estoque.
-    Equivale ao 'public interface IEstoque' do Java.
-    """
 
     @abstractmethod
-    def adicionarProduto(self, nome, quantidade, preco=0.0, categoria="Geral"):
+    def adicionarProduto(self, nome, quantidade):
         pass
 
-    @abstractmethod
-    def getProdutos(self):
-        pass
-
-    @abstractmethod
-    def estoqueVazio(self):
-        pass
-
-    @abstractmethod
-    def buscarProduto(self, nome):
-        pass
-
-    @abstractmethod
-    def retirarProduto(self, nome, quantidade):
-        pass
-
-    @abstractmethod
-    def alterarEstoque(self, nome, novoNome, novaQuantidade):
-        pass
-
-    @abstractmethod
-    def deletarProduto(self, nome):
-        pass
-📄 controller/ControleDeEstoque.py
-python
-from model.Produto import Produto
-from controller.IEstoque import IEstoque
-
-
-class ControleDeEstoque(IEstoque):  # equivale a "implements IEstoque"
-
-    # instancia arrayList produtos com a classe dos objetos sendo Produto.
-    def __init__(self):
-        self.produtos = []
-        # construtor
-
-    def adicionarProduto(self, nome, quantidade, preco=0.0, categoria="Geral"):
-        if self.buscarProduto(nome):
-            return False
-        produto = Produto(nome, quantidade, preco, categoria)  # instancia produto
-        self.produtos.append(produto)
-        # instancia um novo objeto na arraylist
-        return True
-
-    def getProdutos(self):
-        return self.produtos
-        # metodo get para pegar o valor do produto na arrayList
-
-    def estoqueVazio(self):
-        return len(self.produtos) == 0
-        # metodo que verifica se o estoque esta vazio
-
-    def buscarProduto(self, nome):
-        for produto in self.produtos:
-            if produto.getNome().lower() == nome.lower():
-                return produto
-        return None
-        # verifica se existe o produto com base no nome dele.
-
-    def retirarProduto(self, nome, quantidade):
-        produto = self.buscarProduto(nome)
-        if produto is None or quantidade > produto.getQuantidade():
-            return False
-        novaQuantidade = produto.getQuantidade() - quantidade
-        produto.setQuantidade(novaQuantidade)
-
-        return True
-        # verifica se o produto existe, pega o produto pelo nome e retira a quantidade desejada.
-
-    def alterarEstoque(self, nome, novoNome, novaQuantidade):
-        produto = self.buscarProduto(nome)
-        if produto is None:
-            return False
-        produto.setNome(novoNome)
-        produto.setQuantidade(novaQuantidade)
-        return True
-
-        # metodo alterarEstoque, invoca buscarProduto, verifica se existe, se sim seta um novo nome
-        # e uma nova quantidade
-
-    def deletarProduto(self, nome):
-        produto = self.buscarProduto(nome)
-        if produto is None:
-            return False
-        self.produtos.remove(produto)
-        return True
-        # procura o produto no metodo buscarProduto, se achar o remove do estoque.
-📄 view/__init__.py
-python
-(arquivo vazio)
-
-📄 view/MenuEstoque.py
-python
+🛠️ Tecnologias
+Python 3.10+
+MVC (Model-View-Controller)
+ABC (Abstract Base Class)
+Flask
+Flask-CORS
+CustomTkinter
+HTML5
+CSS3
+JavaScript
+REST API
+JSON
+👨‍💻 Autor
