@@ -5,28 +5,37 @@
 <title>Estoque · Sistema Operacional</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  /*html e script feitos com ia apenas para demonstração, já funcional porem sem db
-  autenticação, integração, etc*/
-
+  /*html, JS e CSS feitos com ia, apenas para demonstração, já funcional porem sem metodos HTTP, API, db , autenticação, integração, etc*/
+  /*em um único arquivo para não necessitar que sejam baixados e linkados outros arquivos pois é apenas uma prévia. */
   :root {
-    --bg-deep:      #0A0C0E;
-    --bg-panel:     #111417;
-    --bg-elevated:  #191D21;
-    --bg-hover:     #21262C;
-    --border-subtle: #1F242A;
-    --border-active: #2C333B;
-    --text-primary: #EAECEE;
-    --text-muted:   #8B929A;
-    --text-dim:     #545B63;
-    --accent:        #6EE7A0
-    --accent-dim:    #3D9B6A;
-    --accent-glow:   rgba(110, 231, 160, 0.08)
-    --state-warn: #C9A96E
-    --state-crit: #C96E6E
+    /* ─── SUPERFÍCIES ─── */
+    --bg-deep:      #4C4C4C;   /* fundo geral solicitado */
+    --bg-panel:     #3F3F3F;   /* painéis — mais escuros para contraste */
+    --bg-elevated:  #474747;   /* hover de linhas */
+    --bg-hover:     #555555;   /* hover de botões */
+
+    /* ─── BORDAS ─── */
+    --border-subtle: #5C5C5C;
+    --border-active: #6E6E6E;
+
+    /* ─── TEXTO ─── */
+    --text-primary: #F2F2F2;
+    --text-muted:   #C4C4C4;
+    --text-dim:     #909090;
+
+    /* ─── ACENTO (TEAL #099797) ─── */
+    --accent:        #099797;
+    --accent-dark:   #077878;
+    --accent-light:  #14B3B3;
+    --accent-glow:   rgba(9, 151, 151, 0.15);
+    --accent-glow-lg:rgba(9, 151, 151, 0.35);
+
+    /* ─── ESTADOS ─── */
+    --state-warn: #C9A04E;
+    --state-crit: #C96060;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
     background: var(--bg-deep);
     color: var(--text-primary);
@@ -35,472 +44,675 @@
     min-height: 100vh;
     padding: 40px 48px 64px;
     background-image:
-      radial-gradient(ellipse 60% 40% at 80% 0%, rgba(110, 231, 160, 0.03), transparent),
-      radial-gradient(ellipse 40% 60% at 0% 100%, rgba(110, 231, 160, 0.02), transparent);
+      radial-gradient(ellipse 60% 40% at 80% 0%, rgba(9, 151, 151, 0.08), transparent),
+      radial-gradient(ellipse 40% 60% at 0% 100%, rgba(9, 151, 151, 0.05), transparent);
     background-attachment: fixed;
   }
 
+  /* ═══════════ RÓTULOS GLOBAIS — hover universal ═══════════ */
+  .brand, .panel-title, .panel-live, .products-head,
+  .product-sku, .product-category, .product-status, .log-time,
+  .hero-metric .label, .hero-metric .trend,
+  .action-icon, .action-hint, .modal-eyebrow, .field label,
+  .ps-label, .ps-meta, .detail-cell .cell-label,
+  .busca-tab, .busca-results-hint, .busca-results-hint .count,
+  .modal-search-hint, .modal-search-hint .count, .field .helper {
+    cursor: default;
+    transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                filter 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                text-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: left center;
+    will-change: color, transform, filter;
+  }
+
+  .brand:hover, .panel-title:hover, .panel-live:hover,
+  .product-sku:hover, .product-category:hover, .log-time:hover,
+  .hero-metric .label:hover, .hero-metric .trend:hover,
+  .action-icon:hover, .action-hint:hover, .modal-eyebrow:hover,
+  .field label:hover, .ps-label:hover, .ps-meta:hover,
+  .detail-cell .cell-label:hover, .busca-results-hint:hover,
+  .modal-search-hint:hover, .field .helper:hover {
+    color: var(--accent-light);
+    filter: brightness(1.15) saturate(1.2);
+    transform: scale(1.035) translateX(2px);
+    text-shadow: 0 0 12px var(--accent-glow-lg);
+  }
+
+  .products-head:hover,
+  .product-row:hover .product-sku,
+  .product-row:hover .product-category,
+  .product-row:hover .product-status,
+  .log-line:hover .log-time,
+  .busca-tab:hover {
+    color: var(--accent-light);
+    filter: brightness(1.15) saturate(1.2);
+  }
+
+  .product-status.ok:hover    { color: var(--accent-light); }
+  .product-status.low:hover   { color: var(--state-warn); }
+  .product-status.crit:hover  { color: var(--state-crit); }
+  .busca-results-hint .count:hover,
+  .modal-search-hint .count:hover { color: var(--accent-light); }
+
+  /* ═══════════ HEADER ═══════════ */
   .header {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 64px;
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: 64px;
     padding-bottom: 40px;
     border-bottom: 1px solid var(--border-subtle);
-    margin-bottom: 40px;
-    align-items: end;
+    margin-bottom: 40px; align-items: end;
   }
-
   .brand {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.25em; text-transform: uppercase;
     color: var(--text-dim);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
   }
-
   .brand-mark {
-    width: 8px;
-    height: 8px;
-    background: var(--accent);
-    border-radius: 50%;
-    box-shadow: 0 0 16px var(--accent-glow);
+    width: 8px; height: 8px;
+    background: var(--accent); border-radius: 50%;
+    box-shadow: 0 0 0 4px var(--accent-glow), 0 0 16px var(--accent-glow-lg);
   }
-
   .headline {
-    font-family: 'Playfair Display', serif;
-    font-size: 44px;
-    font-weight: 400;
-    line-height: 1.15;
-    color: var(--text-primary);
+    font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 400;
+    line-height: 1.15; color: red var(--text-primary);
     letter-spacing: -0.01em;
   }
+  .headline em { font-style: italic; color: var(--accent-light); }
+  .subheadline { font-size: 15px; line-height: 1.6; color: var(--text-muted); max-width: 380px; }
 
-  .headline em {
-    font-style: italic;
-    color: var(--accent);
-    font-weight: 400;
-  }
-
-  .subheadline {
-    font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--text-muted);
-    max-width: 380px;
-    font-weight: 400;
-  }
-
-
+  /* ═══════════ HERO METRICS ═══════════ */
   .hero-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
-    padding: 32px 0;
-    margin-bottom: 40px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;
+    padding: 44px 0; margin-bottom: 40px;
     border-bottom: 1px solid var(--border-subtle);
+  }
+  .hero-metric {
+    position: relative;
+    padding: 12px 0 12px 24px;
+    cursor: default;
+    transform-origin: left center;
+    transition: filter 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .hero-metric::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 8px; bottom: 8px;
+    width: 3px; border-radius: 2px;
+    background: linear-gradient(180deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+    animation: breathe 3.8s ease-in-out infinite;
+    transition: opacity 0.45s ease, width 0.45s ease;
+  }
+  .hero-metric:nth-child(2)::before { animation-delay: 1.2s; }
+  .hero-metric:nth-child(3)::before { animation-delay: 2.4s; }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 0.25; transform: scaleY(0.9); }
+    50%      { opacity: 0.85; transform: scaleY(1); }
   }
 
   .hero-metric .label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 12px;
+    font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--text-dim);
+    margin-bottom: 14px;
   }
-
   .hero-metric .value {
     font-family: 'Playfair Display', serif;
-    font-size: 48px;
-    font-weight: 400;
-    line-height: 1;
-    color: var(--text-primary);
-    margin-bottom: 8px;
+    font-size: 62px; font-weight: 400; line-height: 1;
+    color: var(--text-primary); margin-bottom: 10px;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.45s ease, text-shadow 0.45s ease,
+                font-size 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: contents, font-size;
   }
-
-  .hero-metric .value.accent { color: var(--accent); }
-
+  .hero-metric .value.accent {
+    color: var(--accent-light);
+    text-shadow: 0 0 24px var(--accent-glow-lg);
+    animation: accentPulse 3.2s ease-in-out infinite;
+  }
+  @keyframes accentPulse {
+    0%, 100% { text-shadow: 0 0 16px var(--accent-glow); }
+    50%      { text-shadow: 0 0 36px var(--accent-glow-lg); }
+  }
   .hero-metric .trend {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
+    font-size: 12px; color: var(--text-dim); letter-spacing: 0.05em;
   }
 
-  /* ═══════════ AÇÕES (Botões Principais) ═══════════ */
+  .hero-metric:hover {
+    filter: brightness(1.1) saturate(1.15);
+    transform: scale(1.01) translateY(-3px);
+  }
+  .hero-metric:hover::before {
+    opacity: 1; width: 4px;
+    animation-play-state: paused;
+  }
+  .hero-metric:hover .label { color: var(--accent-light); }
+  .hero-metric:hover .value {
+    color: var(--accent-light);
+    font-size: 60px;
+    text-shadow: 0 0 32px var(--accent-glow-lg),
+                 0 0 64px var(--accent-glow);
+  }
+  .hero-metric:hover .value.accent {
+    color: var(--accent);
+    text-shadow: 0 0 40px var(--accent-glow-lg),
+                 0 0 80px var(--accent-glow),
+                 0 0 120px rgba(9, 151, 151, 0.15);
+    animation-play-state: paused;
+  }
+  .hero-metric:hover .trend { color: var(--text-muted); }
+
+  /* ═══════════ AÇÕES com SVG trace ═══════════ */
   .actions {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1px;
-    background: var(--border-subtle);
-    border: 1px solid var(--border-subtle);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 40px;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 10px; margin-bottom: 40px;
   }
-
   .action-btn {
+    position: relative;
     background: var(--bg-panel);
     border: none;
-    padding: 22px 20px;
+    padding: 24px 20px;
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     font-size: 13px;
     text-align: left;
     cursor: pointer;
-    transition: background 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    position: relative;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+    overflow: hidden;
+    border-radius: 6px;
   }
-
+  .action-btn .btn-svg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; fill: none;
+  }
+  .action-btn .bg-line {
+    stroke: var(--border-subtle); stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .action-btn .hl-line {
+    stroke: var(--accent); stroke-width: 1.8;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 100 400; stroke-dashoffset: 100;
+    transition: stroke-dashoffset 1s ease-in-out;
+  }
   .action-btn:hover {
     background: var(--bg-elevated);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   }
-
+  .action-btn:hover .hl-line { stroke-dashoffset: -400; }
   .action-btn:hover .action-icon {
-    color: var(--accent);
+    color: var(--accent-light);
+    filter: brightness(1.1);
+    transform: scale(1.035) translateX(2px);
   }
-
-  .action-icon {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    transition: color 0.2s ease;
+  .action-btn .action-icon {
+    position: relative; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text-dim); letter-spacing: 0.15em;
   }
-
-  .action-label {
-    font-family: 'Playfair Display', serif;
-    font-size: 17px;
-    color: var(--text-primary);
-    font-weight: 400;
+  .action-btn .action-label {
+    position: relative; font-family: 'Playfair Display', serif;
+    font-size: 17px; font-weight: 400;
   }
-
-  .action-hint {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .action-btn .action-hint {
+    position: relative; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.08em; text-transform: uppercase;
   }
-
+  .action-btn:hover .action-hint {
+    color: var(--accent-light);
+    filter: brightness(1.15);
+    transform: scale(1.02) translateX(2px);
+  }
   .action-btn.primary {
-    background: var(--accent-glow);
-    border-right: 1px solid rgba(110, 231, 160, 0.15);
+    background: rgba(9, 151, 151, 0.12);
   }
+  .action-btn.primary .action-icon { color: var(--accent-light); }
+  .action-btn.primary:hover { background: rgba(9, 151, 151, 0.22); }
 
-  .action-btn.primary .action-icon {
-    color: var(--accent);
-  }
-
-  .action-btn.primary:hover {
-    background: rgba(110, 231, 160, 0.12);
-  }
-
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1.7fr 1fr;
-    gap: 24px;
-  }
-
+  /* ═══════════ GRID / PAINÉIS ═══════════ */
+  .grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 24px; }
   .panel {
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
-
   .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
     padding: 20px 28px;
     border-bottom: 1px solid var(--border-subtle);
+    background: rgba(255, 255, 255, 0.02);
   }
-
   .panel-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim);
   }
-
   .panel-live {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.15em; color: var(--accent-light);
     text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .panel-live::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-light);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    animation: pulseDot 2s ease-in-out infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(0.85); }
+  }
+  .panel-live:hover {
+    filter: brightness(1.15) saturate(1.2);
+    transform: scale(1.04) translateX(2px);
+    text-shadow: 0 0 10px var(--accent-glow-lg);
   }
 
   .products-head {
-    display: grid;
-    grid-template-columns: 2.4fr 1.1fr 0.8fr 1fr 0.7fr;
-    gap: 16px;
+    display: grid; grid-template-columns: 2.4fr 1.1fr 0.8fr 1fr 0.7fr; gap: 16px;
     padding: 14px 28px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim);
     border-bottom: 1px solid var(--border-subtle);
+    background: rgba(255, 255, 255, 0.02);
   }
-
   .product-row {
-    display: grid;
-    grid-template-columns: 2.4fr 1.1fr 0.8fr 1fr 0.7fr;
-    gap: 16px;
-    padding: 18px 28px;
-    align-items: center;
+    display: grid; grid-template-columns: 2.4fr 1.1fr 0.8fr 1fr 0.7fr; gap: 16px;
+    padding: 18px 28px; align-items: center;
     border-bottom: 1px solid var(--border-subtle);
-    transition: background 0.15s;
+    transition: background 0.2s, box-shadow 0.2s;
   }
-
   .product-row:hover {
     background: var(--bg-elevated);
+    box-shadow: inset 3px 0 0 var(--accent);
   }
-
   .product-row:last-child { border-bottom: none; }
-
   .product-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 17px;
-    font-weight: 400;
-    color: var(--text-primary);
-    line-height: 1.2;
+    font-family: 'Playfair Display', serif; font-size: 17px;
+    color: var(--text-primary); line-height: 1.2;
   }
-
   .product-sku {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: var(--text-dim);
-    margin-top: 4px;
-    letter-spacing: 0.08em;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-dim); margin-top: 4px; letter-spacing: 0.08em;
   }
-
   .product-category {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;
   }
-
   .product-qty {
-    font-family: 'Playfair Display', serif;
-    font-size: 24px;
-    color: var(--text-primary);
-    text-align: right;
-    font-weight: 400;
+    font-family: 'Playfair Display', serif; font-size: 24px;
+    color: var(--text-primary); text-align: right;
   }
-
   .product-qty.low { color: var(--state-warn); }
   .product-qty.crit { color: var(--state-crit); }
-
   .product-price {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    text-align: right;
-    letter-spacing: 0.05em;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--text-muted); text-align: right;
   }
-
   .product-status {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    text-align: right;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.15em; text-transform: uppercase; text-align: right;
     color: var(--text-dim);
   }
-
-  .product-status.ok { color: var(--accent-dim); }
-  .product-status.low { color: var(--state-warn); }
+  .product-status.ok   { color: var(--accent-light); }
+  .product-status.low  { color: var(--state-warn); }
   .product-status.crit { color: var(--state-crit); }
 
-  /* ═══════════ LOG ═══════════ */
   .log-feed {
     padding: 20px 28px 24px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    line-height: 2;
-    color: var(--text-muted);
-    max-height: 340px;
-    overflow-y: auto;
+    font-size: 11px; line-height: 2; color: var(--text-muted);
+    max-height: 340px; overflow-y: auto;
   }
-
-  .log-feed::-webkit-scrollbar { width: 3px; }
-  .log-feed::-webkit-scrollbar-thumb { background: var(--border-active); }
-
+  .log-feed::-webkit-scrollbar { width: 4px; }
+  .log-feed::-webkit-scrollbar-thumb {
+    background: var(--border-active); border-radius: 2px;
+  }
   .log-line {
-    display: grid;
-    grid-template-columns: 52px 1fr;
-    gap: 16px;
-    padding: 6px 0;
+    display: grid; grid-template-columns: 52px 1fr; gap: 16px;
+    padding: 8px 8px 8px 12px;
     border-bottom: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    transition: background 0.2s;
   }
-
+  .log-line:hover { background: var(--bg-elevated); }
   .log-line:last-child { border-bottom: none; }
-
-  .log-time {
-    color: var(--text-dim);
-    font-size: 10px;
-  }
-
-  .log-text strong {
-    color: var(--text-primary);
-    font-weight: 500;
-  }
+  .log-time { color: var(--text-dim); font-size: 11px; }
+  .log-text strong { color: var(--accent-light); font-weight: 600; }
 
   /* ═══════════ MODAL ═══════════ */
   .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(5, 7, 9, 0.8);
-    backdrop-filter: blur(8px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+    position: fixed; inset: 0; background: rgba(20, 20, 20, 0.75);
+    backdrop-filter: blur(8px); display: none; align-items: center;
+    justify-content: center; z-index: 1000; padding: 20px;
   }
-
   .modal-overlay.active { display: flex; }
-
   .modal {
     background: var(--bg-panel);
     border: 1px solid var(--border-active);
-    border-radius: 8px;
-    width: 100%;
-    max-width: 460px;
-    padding: 40px;
-    animation: modalIn 0.25s ease;
+    border-radius: 12px;
+    width: 100%; max-width: 460px; padding: 40px;
+    animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 90vh; display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                0 4px 12px rgba(0, 0, 0, 0.3);
   }
-
+  .modal.large { max-width: 580px; }
   @keyframes modalIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
-
   .modal-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent-light);
     margin-bottom: 16px;
   }
-
   .modal-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 30px;
-    font-weight: 400;
-    color: var(--text-primary);
-    margin-bottom: 32px;
-    line-height: 1.2;
+    font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 400;
+    color: var(--text-primary); margin-bottom: 24px; line-height: 1.2;
   }
-
-  .field {
-    margin-bottom: 20px;
-  }
-
+  .field { margin-bottom: 20px; }
   .field label {
-    display: block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
+    display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim);
     margin-bottom: 10px;
   }
-
   .field input {
-    width: 100%;
-    background: var(--bg-deep);
+    width: 100%; background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-subtle);
-    border-radius: 4px;
-    padding: 14px 16px;
+    border-radius: 6px; padding: 14px 16px;
     color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.15s;
+    font-family: 'Inter', sans-serif; font-size: 14px; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   }
-
   .field input:focus {
-    border-color: var(--accent);
-    background: #0D0F12;
+    border-color: var(--accent); background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 0 4px var(--accent-glow);
   }
-
-  .field input::placeholder {
-    color: var(--text-dim);
+  .field input::placeholder { color: var(--text-dim); }
+  .field .helper {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-dim); margin-top: 6px; letter-spacing: 0.08em;
   }
-
-  .modal-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 36px;
-  }
-
+  .modal-actions { display: flex; gap: 12px; margin-top: 32px; }
   .btn {
-    flex: 1;
-    padding: 14px;
-    border-radius: 4px;
+    flex: 1; padding: 14px; border-radius: 6px;
     border: 1px solid var(--border-subtle);
-    background: var(--bg-elevated);
-    color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .btn:hover {
     background: var(--bg-hover);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn:hover {
+    background: #5F5F5F;
     border-color: var(--border-active);
+    transform: translateY(-1px);
   }
-
   .btn.primary {
-    background: var(--accent);
-    color: #0A0C0E;
-    border-color: var(--accent);
-    font-weight: 600;
+    background: var(--accent); color: #FFFFFF;
+    border-color: var(--accent); font-weight: 600;
   }
-
   .btn.primary:hover {
-    background: #8FFFB8;
-    border-color: #8FFFB8;
+    background: var(--accent-light);
+    border-color: var(--accent-light);
+    box-shadow: 0 8px 24px var(--accent-glow-lg);
+  }
+  .btn.danger {
+    background: var(--state-crit); color: #FFFFFF;
+    border-color: var(--state-crit); font-weight: 600;
+  }
+  .btn.danger:hover {
+    background: #D47070; border-color: #D47070;
+    box-shadow: 0 8px 24px rgba(201, 96, 96, 0.3);
   }
 
+  /* ═══════════ ABAS LISTA / BUSCA ═══════════ */
+  .busca-tabs {
+    display: flex; gap: 0; margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .busca-tab {
+    background: transparent; border: none;
+    padding: 12px 20px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-dim); position: relative;
+  }
+  .busca-tab:hover { color: var(--text-muted); }
+  .busca-tab.active { color: var(--accent-light); }
+  .busca-tab.active:hover {
+    filter: brightness(1.15) saturate(1.2);
+    text-shadow: 0 0 10px var(--accent-glow);
+  }
+  .busca-tab.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: 2px; background: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow-lg);
+    border-radius: 2px 2px 0 0;
+  }
 
-  .toast {
-    position: fixed;
-    bottom: 32px;
-    left: 50%;
-    transform: translateX(-50%) translateY(120px);
+  .busca-search-input {
+    width: 100%; background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px; padding: 16px 18px;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif; font-size: 15px; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    margin-bottom: 16px;
+  }
+  .busca-search-input:focus {
+    border-color: var(--accent); background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+  }
+  .busca-search-input::placeholder { color: var(--text-dim); }
+
+  .busca-results-hint {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 10px;
+    display: flex; justify-content: space-between;
+  }
+  .busca-results-hint .count { color: var(--accent-light); }
+
+  .modal-search-hint {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 14px; display: flex; justify-content: space-between;
+  }
+  .modal-search-hint .count { color: var(--accent-light); }
+  .modal-product-list {
+    display: flex; flex-direction: column; gap: 6px;
+    overflow-y: auto; max-height: 300px; margin: -6px; padding: 6px;
+  }
+  .modal-product-list::-webkit-scrollbar { width: 4px; }
+  .modal-product-list::-webkit-scrollbar-thumb {
+    background: var(--border-active); border-radius: 2px;
+  }
+  .modal-product-item {
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px; padding: 16px 18px; cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: grid; grid-template-columns: 1fr auto;
+    align-items: center; gap: 16px;
+  }
+  .modal-product-item:hover {
     background: var(--bg-elevated);
+    border-color: var(--accent);
+    transform: translateX(3px);
+    box-shadow: 0 4px 12px rgba(9, 151, 151, 0.15);
+  }
+  .modal-product-item:hover .item-meta {
+    color: var(--accent-light);
+    filter: brightness(1.15) saturate(1.2);
+    transform: scale(1.02) translateX(2px);
+  }
+  .modal-product-item:hover .item-arrow {
+    color: var(--accent-light);
+    transform: translateX(3px);
+  }
+  .modal-product-item .item-name {
+    font-family: 'Playfair Display', serif; font-size: 16px;
+    color: var(--text-primary); margin-bottom: 4px;
+  }
+  .modal-product-item .item-name mark {
+    background: var(--accent-glow); color: var(--accent-light);
+    padding: 0 3px; border-radius: 2px; font-weight: 600;
+  }
+  .modal-product-item .item-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-dim); letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+  }
+  .modal-product-item .item-right {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .modal-product-item .item-qty {
+    font-family: 'Playfair Display', serif; font-size: 20px;
+    color: var(--text-primary); min-width: 40px; text-align: right;
+  }
+  .modal-product-item .item-qty.low { color: var(--state-warn); }
+  .modal-product-item .item-qty.crit { color: var(--state-crit); }
+  .modal-product-item .item-arrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+    color: var(--text-dim); transition: all 0.2s ease;
+  }
+  .modal-empty {
+    padding: 40px 20px; text-align: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.15em; color: var(--text-dim); text-transform: uppercase;
+  }
+
+  /* ═══════════ PRODUTO SELECIONADO ═══════════ */
+  .produto-selecionado {
+    background: rgba(9, 151, 151, 0.12);
+    border: 1px solid rgba(9, 151, 151, 0.4);
+    border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 24px;
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 16px;
+    transition: all 0.3s ease;
+  }
+  .produto-selecionado:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+  }
+  .produto-selecionado .ps-info { flex: 1; min-width: 0; }
+  .produto-selecionado .ps-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent-light); margin-bottom: 4px;
+  }
+  .produto-selecionado .ps-nome {
+    font-family: 'Playfair Display', serif; font-size: 17px;
+    color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .produto-selecionado .ps-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-muted); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-top: 2px;
+  }
+  .produto-selecionado .ps-trocar {
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 4px; color: var(--accent-light);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 8px 12px; cursor: pointer;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .produto-selecionado .ps-trocar:hover {
+    background: var(--accent); color: #FFFFFF;
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px var(--accent-glow-lg);
+  }
+
+  /* ═══════════ DETALHE ═══════════ */
+  .detail-name {
+    font-family: 'Playfair Display', serif; font-size: 24px;
+    color: var(--text-primary); line-height: 1.2;
+  }
+  .detail-sku {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-dim); letter-spacing: 0.15em;
+    margin: 4px 0 28px 0;
+  }
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--border-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px; overflow: hidden;
+  }
+  .detail-cell {
+    background: rgba(0, 0, 0, 0.15); padding: 18px 20px;
+    transition: background 0.25s ease;
+  }
+  .detail-cell:hover { background: var(--bg-elevated); }
+  .detail-cell .cell-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .detail-cell .cell-value {
+    font-family: 'Playfair Display', serif; font-size: 22px;
+    color: var(--text-primary); line-height: 1.1;
+  }
+  .detail-cell .cell-value.low { color: var(--state-warn); }
+  .detail-cell .cell-value.crit { color: var(--state-crit); }
+  .detail-cell .cell-value.small {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ═══════════ AVISO DE DELETE ═══════════ */
+  .danger-warning {
+    background: rgba(201, 96, 96, 0.12);
+    border: 1px solid rgba(201, 96, 96, 0.35);
+    border-left: 3px solid var(--state-crit);
+    border-radius: 8px; padding: 16px 18px; margin-bottom: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; line-height: 1.7;
+    color: #E08888; letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+  }
+  .danger-warning:hover {
+    background: rgba(201, 96, 96, 0.18);
+    border-color: rgba(201, 96, 96, 0.5);
+    box-shadow: 0 0 0 4px rgba(201, 96, 96, 0.08);
+  }
+  .danger-warning strong {
+    color: #E89898; display: block;
+    margin-bottom: 4px; letter-spacing: 0.1em;
+  }
+
+  /* ═══════════ TOAST ═══════════ */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: var(--bg-panel);
     border: 1px solid var(--border-active);
     border-left: 3px solid var(--accent);
-    border-radius: 4px;
-    padding: 16px 24px;
+    border-radius: 6px; padding: 16px 24px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.05em;
+    font-size: 11px; letter-spacing: 0.05em;
     color: var(--text-primary);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
     z-index: 2000;
     transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-
   .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { border-left-color: var(--state-crit); }
 </style>
 </head>
 <body>
@@ -540,37 +752,54 @@
   </section>
 
   <nav class="actions">
-    <button class="action-btn primary" onclick="abrirModal('adicionar')">
+    <button class="action-btn primary" data-acao="adicionar">
+      <svg class="btn-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="bg-line"/>
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="hl-line"/>
+      </svg>
       <span class="action-icon">01 / ADICIONAR</span>
       <span class="action-label">Novo produto</span>
       <span class="action-hint">Entrada de estoque</span>
     </button>
-    <button class="action-btn" onclick="abrirModal('alterar')">
+    <button class="action-btn" data-acao="alterar">
+      <svg class="btn-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="bg-line"/>
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="hl-line"/>
+      </svg>
       <span class="action-icon">02 / ALTERAR</span>
       <span class="action-label">Editar produto</span>
-      <span class="action-hint">Nome / quantidade</span>
+      <span class="action-hint">Lista ou busca</span>
     </button>
-    <button class="action-btn" onclick="abrirModal('retirar')">
+    <button class="action-btn" data-acao="retirar">
+      <svg class="btn-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="bg-line"/>
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="hl-line"/>
+      </svg>
       <span class="action-icon">03 / RETIRAR</span>
       <span class="action-label">Saída de estoque</span>
-      <span class="action-hint">Baixa de item</span>
+      <span class="action-hint">Lista ou busca</span>
     </button>
-    <button class="action-btn" onclick="abrirModal('buscar')">
+    <button class="action-btn" data-acao="buscar">
+      <svg class="btn-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="bg-line"/>
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="hl-line"/>
+      </svg>
       <span class="action-icon">04 / BUSCAR</span>
       <span class="action-label">Localizar item</span>
-      <span class="action-hint">Consulta por nome</span>
+      <span class="action-hint">Lista ou busca</span>
     </button>
-    <button class="action-btn" onclick="abrirModal('deletar')">
+    <button class="action-btn" data-acao="deletar">
+      <svg class="btn-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="bg-line"/>
+        <polyline points="99,1 99,99 1,99 1,1 99,1" class="hl-line"/>
+      </svg>
       <span class="action-icon">05 / DELETAR</span>
       <span class="action-label">Remover produto</span>
-      <span class="action-hint">Ação irreversível</span>
+      <span class="action-hint">Lista ou busca</span>
     </button>
   </nav>
 
-  
   <div class="grid">
-
-
     <section class="panel">
       <div class="panel-header">
         <span class="panel-title">Produtos em estoque</span>
@@ -586,27 +815,20 @@
       <div id="lista-produtos"></div>
     </section>
 
-    <!-- DIREITA: LOG -->
     <aside class="panel">
       <div class="panel-header">
         <span class="panel-title">Log de operações</span>
       </div>
       <div class="log-feed" id="log-feed"></div>
     </aside>
-
   </div>
 
   <div class="modal-overlay" id="modal">
-    <div class="modal">
+    <div class="modal" id="modal-box">
       <div class="modal-eyebrow" id="modal-eyebrow">AÇÃO</div>
       <h2 class="modal-title" id="modal-title">Título</h2>
-      <form id="modal-form" onsubmit="return executarAcao(event)">
-        <div id="modal-fields"></div>
-        <div class="modal-actions">
-          <button type="button" class="btn" onclick="fecharModal()">Cancelar</button>
-          <button type="submit" class="btn primary" id="modal-confirmar">Confirmar</button>
-        </div>
-      </form>
+      <div id="modal-body"></div>
+      <div class="modal-actions" id="modal-actions"></div>
     </div>
   </div>
 
@@ -614,60 +836,80 @@
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-   ESTADO — espelha o ControleDeEstoque.py
+   ESTADO
    ═══════════════════════════════════════════════════════════ */
 let produtos = [
-  { nome: "Teclado Mecânico RGB", quantidade: 48, preco: 289.90, categoria: "Periféricos" },
-  { nome: "Mouse Sem Fio Pro",    quantidade: 62, preco: 149.90, categoria: "Periféricos" },
-  { nome: 'Monitor 27" 4K',       quantidade: 4,  preco: 2890.00, categoria: "Hardware" },
-  { nome: "Cabo HDMI 2.1",        quantidade: 210,preco: 39.90,  categoria: "Acessórios" },
-  { nome: "SSD NVMe 1TB",         quantidade: 3,  preco: 749.00, categoria: "Hardware" },
-  { nome: "Webcam Full HD",       quantidade: 25, preco: 249.90, categoria: "Periféricos" },
+  { nome: "Teclado Mecânico RGB", quantidade: 48,  preco: 289.90,  categoria: "Periféricos" },
+  { nome: "Mouse Sem Fio Pro",    quantidade: 62,  preco: 149.90,  categoria: "Periféricos" },
+  { nome: 'Monitor 27" 4K',       quantidade: 4,   preco: 2890.00, categoria: "Hardware" },
+  { nome: "Cabo HDMI 2.1",        quantidade: 210, preco: 39.90,   categoria: "Acessórios" },
+  { nome: "SSD NVMe 1TB",         quantidade: 3,   preco: 749.00,  categoria: "Hardware" },
+  { nome: "Webcam Full HD",       quantidade: 25,  preco: 249.90,  categoria: "Periféricos" },
 ];
 
 let logEntries = [];
+let acaoAtual = null;
+let modalEtapa = 'selecao';
+let modalTab = 'lista';
+let modalTermo = '';
+let modalProdutoIndex = -1;
+const _metricCache = { itens: 0, valor: 0, atencao: 0 };
 
 /* ═══════════════════════════════════════════════════════════
-   AÇÕES (equivalentes ao Controller Python)
+   ANIMAÇÃO DE VALORES
+   ═══════════════════════════════════════════════════════════ */
+function animateValue(el, from, to, duration, formatter) {
+  if (from === to) { el.textContent = formatter(to); return; }
+  const startTime = performance.now();
+  function frame(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const atual = from + (to - from) * eased;
+    el.textContent = formatter(atual);
+    if (t < 1) requestAnimationFrame(frame);
+    else el.textContent = formatter(to);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AÇÕES
    ═══════════════════════════════════════════════════════════ */
 function adicionarProduto(nome, quantidade, preco, categoria) {
-  if (buscarProduto(nome)) { toast("Produto já existe. Use 'Alterar'."); return false; }
-  produtos.push({ nome, quantidade, preco, categoria });
+  if (produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase())) return false;
+  produtos.push({ nome, quantidade: +quantidade, preco: +preco, categoria: categoria || "Geral" });
   registrar(`Entrada: <strong>${nome}</strong> +${quantidade} un.`);
+  atualizarTudo();
   return true;
 }
-
-function buscarProduto(nome) {
-  return produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase()) || null;
-}
-
 function alterarEstoque(nome, novoNome, novaQuantidade) {
-  const p = buscarProduto(nome);
+  const p = produtos.find(x => x.nome.toLowerCase() === nome.toLowerCase());
   if (!p) return false;
-  p.nome = novoNome;
-  p.quantidade = novaQuantidade;
-  registrar(`Alteração: <strong>${nome}</strong> → ${novoNome} (${novaQuantidade} un.)`);
+  p.nome = novoNome || p.nome;
+  p.quantidade = +novaQuantidade;
+  registrar(`Alteração: <strong>${nome}</strong> → ${p.nome}`);
+  atualizarTudo();
   return true;
 }
-
 function retirarProduto(nome, quantidade) {
-  const p = buscarProduto(nome);
-  if (!p || quantidade > p.quantidade) return false;
-  p.quantidade -= quantidade;
+  const p = produtos.find(x => x.nome.toLowerCase() === nome.toLowerCase());
+  if (!p || +quantidade > p.quantidade) return false;
+  p.quantidade -= +quantidade;
   registrar(`Saída: <strong>${nome}</strong> −${quantidade} un.`);
+  atualizarTudo();
   return true;
 }
-
 function deletarProduto(nome) {
-  const p = buscarProduto(nome);
-  if (!p) return false;
-  produtos = produtos.filter(x => x !== p);
+  const idx = produtos.findIndex(x => x.nome.toLowerCase() === nome.toLowerCase());
+  if (idx === -1) return false;
+  produtos.splice(idx, 1);
   registrar(`Removido: <strong>${nome}</strong>`);
+  atualizarTudo();
   return true;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   RENDERIZAÇÃO
+   RENDER
    ═══════════════════════════════════════════════════════════ */
 function renderProdutos() {
   const el = document.getElementById('lista-produtos');
@@ -676,17 +918,19 @@ function renderProdutos() {
     return;
   }
   el.innerHTML = produtos.map(p => {
-    const status = p.quantidade === 0 ? 'crit' : p.quantidade < 5 ? 'low' : 'ok';
+    const q = +p.quantidade;
+    const status = q === 0 ? 'crit' : q < 5 ? 'low' : 'ok';
     const statusTxt = status === 'crit' ? 'CRÍTICO' : status === 'low' ? 'ATENÇÃO' : 'OK';
+    const preco = p.preco ? `R$ ${(+p.preco).toFixed(2).replace('.', ',')}` : '—';
     return `
       <div class="product-row">
         <div>
-          <div class="product-name">${p.nome}</div>
+          <div class="product-name">${escapeHtml(p.nome)}</div>
           <div class="product-sku">SKU · ${gerarSKU(p.nome)}</div>
         </div>
-        <div class="product-category">${p.categoria}</div>
-        <div class="product-qty ${status !== 'ok' ? status : ''}">${p.quantidade}</div>
-        <div class="product-price">R$ ${p.preco.toFixed(2).replace('.', ',')}</div>
+        <div class="product-category">${p.categoria || 'GERAL'}</div>
+        <div class="product-qty ${status !== 'ok' ? status : ''}">${q}</div>
+        <div class="product-price">${preco}</div>
         <div class="product-status ${status}">${statusTxt}</div>
       </div>
     `;
@@ -708,22 +952,27 @@ function renderLog() {
 }
 
 function renderMetricas() {
-  const total = produtos.reduce((s, p) => s + p.quantidade, 0);
-  const valor = produtos.reduce((s, p) => s + (p.preco * p.quantidade), 0);
-  const atencao = produtos.filter(p => p.quantidade < 5).length;
+  const total   = produtos.reduce((s, p) => s + (+p.quantidade), 0);
+  const valor   = produtos.reduce((s, p) => s + ((+p.preco) * (+p.quantidade)), 0);
+  const atencao = produtos.filter(p => (+p.quantidade) < 5).length;
 
-  document.getElementById('metric-itens').textContent = total;
-  document.getElementById('metric-valor').textContent = 'R$ ' + Math.round(valor).toLocaleString('pt-BR');
-  document.getElementById('metric-atencao').textContent = atencao;
+  animateValue(document.getElementById('metric-itens'),   _metricCache.itens,   total,   700, v => String(Math.round(v)));
+  animateValue(document.getElementById('metric-valor'),   _metricCache.valor,   valor,   900, v => 'R$ ' + Math.round(v).toLocaleString('pt-BR'));
+  animateValue(document.getElementById('metric-atencao'), _metricCache.atencao, atencao, 500, v => String(Math.round(v)));
+
+  _metricCache.itens   = total;
+  _metricCache.valor   = valor;
+  _metricCache.atencao = atencao;
 }
 
 function registrar(texto) {
   const agora = new Date();
-  const hora = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0') + ':' + String(agora.getSeconds()).padStart(2, '0');
+  const hora = String(agora.getHours()).padStart(2, '0') + ':' +
+               String(agora.getMinutes()).padStart(2, '0') + ':' +
+               String(agora.getSeconds()).padStart(2, '0');
   logEntries.unshift({ hora, texto });
   atualizarTudo();
 }
-
 function atualizarTudo() { renderProdutos(); renderLog(); renderMetricas(); }
 
 function gerarSKU(nome) {
@@ -731,114 +980,385 @@ function gerarSKU(nome) {
   for (let c of nome) h = (h * 31 + c.charCodeAt(0)) % 10000;
   return String(h).padStart(4, '0');
 }
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function destacar(texto, termo) {
+  if (!termo) return escapeHtml(texto);
+  const idx = texto.toLowerCase().indexOf(termo.toLowerCase());
+  if (idx === -1) return escapeHtml(texto);
+  return escapeHtml(texto.slice(0, idx)) +
+         '<mark>' + escapeHtml(texto.slice(idx, idx + termo.length)) + '</mark>' +
+         escapeHtml(texto.slice(idx + termo.length));
+}
 
 /* ═══════════════════════════════════════════════════════════
-   MODAL
+   CONFIGURAÇÃO DE AÇÕES
    ═══════════════════════════════════════════════════════════ */
-const modais = {
+const ACOES = {
   adicionar: {
-    eyebrow: "01 · ADICIONAR", title: "Cadastrar novo produto",
+    eyebrow: "01 · ADICIONAR", title: "Cadastrar novo produto", fluxo: "form",
     fields: [
-      { id: 'nome',      label: 'Nome',       placeholder: 'Ex: Headset Gamer' },
-      { id: 'quantidade',label: 'Quantidade', placeholder: 'Ex: 50', type: 'number' },
-      { id: 'preco',     label: 'Preço (R$)', placeholder: 'Ex: 249.90', type: 'number', step: '0.01' },
-      { id: 'categoria', label: 'Categoria',  placeholder: 'Ex: Periféricos' },
+      { id: 'nome',       label: 'Nome',        placeholder: 'Ex: Headset Gamer' },
+      { id: 'quantidade', label: 'Quantidade',  placeholder: 'Ex: 50', type: 'number' },
+      { id: 'preco',      label: 'Preço (R$)',  placeholder: 'Ex: 249.90', type: 'number', step: '0.01' },
+      { id: 'categoria',  label: 'Categoria',   placeholder: 'Ex: Periféricos' },
     ],
-    submit: (d) => adicionarProduto(d.nome, +d.quantidade, +d.preco, d.categoria),
+    submit: (d) => adicionarProduto(d.nome, d.quantidade, d.preco || 0, d.categoria),
     success: "Produto adicionado.", fail: "Produto já existe."
   },
   alterar: {
-    eyebrow: "02 · ALTERAR", title: "Editar produto existente",
-    fields: [
-      { id: 'nome',           label: 'Nome atual',      placeholder: 'Ex: Mouse Sem Fio Pro' },
-      { id: 'novoNome',       label: 'Novo nome',       placeholder: 'Deixe igual se não mudar' },
-      { id: 'novaQuantidade', label: 'Nova quantidade', placeholder: 'Ex: 100', type: 'number' },
+    eyebrow: "02 · ALTERAR", title: "Editar produto", fluxo: "select-then-form",
+    buildForm: (p) => [
+      { id: 'novoNome', label: 'Novo nome', value: p.nome },
+      { id: 'novaQuantidade', label: 'Nova quantidade', value: p.quantidade, type: 'number', helper: `Quantidade atual: ${p.quantidade} un.` },
     ],
-    submit: (d) => alterarEstoque(d.nome, d.novoNome || d.nome, +d.novaQuantidade),
-    success: "Produto alterado.", fail: "Produto não encontrado."
+    submit: (p, d) => {
+      const nomeNovo = d.novoNome.trim() || p.nome;
+      const qtdNova = parseInt(d.novaQuantidade, 10);
+      if (isNaN(qtdNova) || qtdNova < 0) return false;
+      return alterarEstoque(p.nome, nomeNovo, qtdNova);
+    },
+    success: "Produto alterado.", fail: "Não foi possível alterar o produto."
   },
   retirar: {
-    eyebrow: "03 · RETIRAR", title: "Registrar saída de estoque",
-    fields: [
-      { id: 'nome',       label: 'Produto',       placeholder: 'Ex: SSD NVMe 1TB' },
-      { id: 'quantidade', label: 'Qtd a retirar', placeholder: 'Ex: 2', type: 'number' },
+    eyebrow: "03 · RETIRAR", title: "Registrar saída", fluxo: "select-then-form",
+    buildForm: (p) => [
+      { id: 'quantidade', label: 'Quantidade a retirar', value: '', type: 'number', placeholder: 'Ex: 2', helper: `Disponível: ${p.quantidade} un.` },
     ],
-    submit: (d) => retirarProduto(d.nome, +d.quantidade),
+    submit: (p, d) => {
+      const qtd = parseInt(d.quantidade, 10);
+      if (isNaN(qtd) || qtd <= 0) return false;
+      return retirarProduto(p.nome, qtd);
+    },
     success: "Saída registrada.", fail: "Produto não encontrado ou quantidade insuficiente."
   },
   buscar: {
-    eyebrow: "04 · BUSCAR", title: "Localizar produto",
-    fields: [{ id: 'nome', label: 'Nome', placeholder: 'Digite o nome completo' }],
-    submit: (d) => {
-      const p = buscarProduto(d.nome);
-      if (!p) return false;
-      toast(`${p.nome} · ${p.quantidade} un. · R$ ${p.preco.toFixed(2)}`);
-      registrar(`Consulta: <strong>${p.nome}</strong>`);
-      return null;
-    },
-    success: "", fail: "Produto não encontrado."
+    eyebrow: "04 · BUSCAR", title: "Localizar produto", fluxo: "select-only",
   },
   deletar: {
-    eyebrow: "05 · DELETAR", title: "Remover produto do estoque",
-    fields: [{ id: 'nome', label: 'Nome do produto', placeholder: 'Ex: Cabo HDMI 2.1' }],
-    submit: (d) => deletarProduto(d.nome),
-    success: "Produto removido.", fail: "Produto não encontrado."
-  
-  }
-}
-
-let acaoAtual = null;
+    eyebrow: "05 · DELETAR", title: "Remover produto", fluxo: "select-then-confirm",
+    confirmar: (p) => deletarProduto(p.nome),
+    success: "Produto removido.", fail: "Não foi possível remover o produto."
+  },
+};
 
 function abrirModal(tipo) {
   acaoAtual = tipo;
-  const cfg = modais[tipo];
+  const cfg = ACOES[tipo];
+  const modalBox = document.getElementById('modal-box');
   document.getElementById('modal-eyebrow').textContent = cfg.eyebrow;
   document.getElementById('modal-title').textContent = cfg.title;
+  modalEtapa = 'selecao'; modalTab = 'lista'; modalTermo = ''; modalProdutoIndex = -1;
+  if (cfg.fluxo === 'form') {
+    modalBox.classList.remove('large');
+    renderFormDireto(cfg);
+  } else {
+    modalBox.classList.add('large');
+    renderSelecaoProduto(cfg);
+  }
+  document.getElementById('modal').classList.add('active');
+  setTimeout(() => document.querySelector('#modal-body input')?.focus(), 60);
+}
 
-  document.getElementById('modal-fields').innerHTML = cfg.fields.map(f => `
+function renderFormDireto(cfg) {
+  const body = document.getElementById('modal-body');
+  const actions = document.getElementById('modal-actions');
+  body.innerHTML = cfg.fields.map(f => `
     <div class="field">
       <label for="f-${f.id}">${f.label}</label>
-      <input id="f-${f.id}" type="${f.type || 'text'}" placeholder="${f.placeholder}"
-             ${f.step ? `step="${f.step}"` : ''} required>
+      <input id="f-${f.id}" type="${f.type || 'text'}" placeholder="${f.placeholder || ''}"
+             ${f.step ? `step="${f.step}"` : ''}>
     </div>
   `).join('');
-
-  document.getElementById('modal').classList.add('active');
-  setTimeout(() => document.querySelector('#modal-fields input')?.focus(), 50);
+  actions.innerHTML = `
+    <button type="button" class="btn" data-fechar>Cancelar</button>
+    <button type="button" class="btn primary" data-executar>Confirmar</button>
+  `;
 }
 
+function renderSelecaoProduto(cfg) {
+  const body = document.getElementById('modal-body');
+  const actions = document.getElementById('modal-actions');
+  actions.innerHTML = `<button type="button" class="btn" data-fechar>Fechar</button>`;
+  const tabs = `
+    <div class="busca-tabs">
+      <button class="busca-tab ${modalTab === 'lista' ? 'active' : ''}" data-tab="lista">Lista</button>
+      <button class="busca-tab ${modalTab === 'busca' ? 'active' : ''}" data-tab="busca">Busca</button>
+    </div>
+  `;
+  const conteudo = modalTab === 'lista' ? renderListaProdutos() : renderBuscaProdutos();
+  body.innerHTML = tabs + conteudo;
+  bindSelecaoEvents();
+}
+
+function renderListaProdutos() {
+  if (produtos.length === 0) return `<div class="modal-empty">Nenhum produto cadastrado</div>`;
+  const itens = produtos.map((p, i) => {
+    const q = +p.quantidade;
+    const status = q === 0 ? 'crit' : q < 5 ? 'low' : '';
+    return `
+      <div class="modal-product-item" data-index="${i}">
+        <div>
+          <div class="item-name">${escapeHtml(p.nome)}</div>
+          <div class="item-meta">${p.categoria || 'GERAL'} · SKU ${gerarSKU(p.nome)}</div>
+        </div>
+        <div class="item-right">
+          <div class="item-qty ${status}">${q}</div>
+          <div class="item-arrow">→</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  return `
+    <div class="modal-search-hint">
+      <span>Selecione um produto</span>
+      <span class="count">${produtos.length} disponíveis</span>
+    </div>
+    <div class="modal-product-list">${itens}</div>
+  `;
+}
+
+function renderBuscaProdutos() {
+  const termo = modalTermo.trim().toLowerCase();
+  const encontrados = termo
+    ? produtos.map((p, i) => ({ p, i })).filter(({ p }) =>
+        p.nome.toLowerCase().includes(termo) ||
+        (p.categoria || '').toLowerCase().includes(termo))
+    : [];
+  let lista;
+  if (!termo) lista = `<div class="modal-empty" style="padding:32px 20px;">Digite para buscar</div>`;
+  else if (encontrados.length === 0) lista = `<div class="modal-empty" style="padding:32px 20px;">Nenhum produto encontrado</div>`;
+  else {
+    lista = encontrados.map(({ p, i }) => {
+      const q = +p.quantidade;
+      const status = q === 0 ? 'crit' : q < 5 ? 'low' : '';
+      return `
+        <div class="modal-product-item" data-index="${i}">
+          <div>
+            <div class="item-name">${destacar(p.nome, modalTermo.trim())}</div>
+            <div class="item-meta">${p.categoria || 'GERAL'} · SKU ${gerarSKU(p.nome)}</div>
+          </div>
+          <div class="item-right">
+            <div class="item-qty ${status}">${q}</div>
+            <div class="item-arrow">→</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  return `
+    <input type="text" class="busca-search-input" id="busca-input"
+           placeholder="Digite o nome ou categoria..." value="${escapeHtml(modalTermo)}" autofocus>
+    <div class="busca-results-hint">
+      <span>${termo ? 'Resultados' : 'Aguardando digitação'}</span>
+      <span class="count">${encontrados.length} encontrados</span>
+    </div>
+    <div class="modal-product-list">${lista}</div>
+  `;
+}
+
+function bindSelecaoEvents() {
+  document.querySelectorAll('.busca-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      modalTab = tab.dataset.tab; modalTermo = '';
+      renderSelecaoProduto(ACOES[acaoAtual]);
+    });
+  });
+  const input = document.getElementById('busca-input');
+  if (input) {
+    input.addEventListener('input', (e) => {
+      modalTermo = e.target.value;
+      const body = document.getElementById('modal-body');
+      const tabs = body.querySelector('.busca-tabs').outerHTML;
+      body.innerHTML = tabs + renderBuscaProdutos();
+      bindSelecaoEvents();
+      const novoInput = document.getElementById('busca-input');
+      if (novoInput) {
+        novoInput.focus();
+        novoInput.setSelectionRange(novoInput.value.length, novoInput.value.length);
+      }
+    });
+  }
+  document.querySelectorAll('.modal-product-item').forEach(el => {
+    el.addEventListener('click', () => selecionarProduto(+el.dataset.index));
+  });
+}
+
+function selecionarProduto(index) {
+  modalProdutoIndex = index; modalEtapa = 'acao';
+  const cfg = ACOES[acaoAtual];
+  const produto = produtos[index];
+  if (cfg.fluxo === 'select-only') renderDetalhe(produto);
+  else if (cfg.fluxo === 'select-then-form') renderFormDeAcao(cfg, produto);
+  else if (cfg.fluxo === 'select-then-confirm') renderConfirmacao(cfg, produto);
+}
+
+function badgeProdutoSelecionado(produto) {
+  return `
+    <div class="produto-selecionado">
+      <div class="ps-info">
+        <div class="ps-label">PRODUTO SELECIONADO</div>
+        <div class="ps-nome">${escapeHtml(produto.nome)}</div>
+        <div class="ps-meta">${produto.categoria || 'GERAL'} · SKU ${gerarSKU(produto.nome)} · ${produto.quantidade} un.</div>
+      </div>
+      <button type="button" class="ps-trocar" data-trocar>Trocar</button>
+    </div>
+  `;
+}
+
+function renderFormDeAcao(cfg, produto) {
+  const body = document.getElementById('modal-body');
+  const actions = document.getElementById('modal-actions');
+  const fields = cfg.buildForm(produto);
+  body.innerHTML = badgeProdutoSelecionado(produto) + fields.map(f => `
+    <div class="field">
+      <label for="f-${f.id}">${f.label}</label>
+      <input id="f-${f.id}" type="${f.type || 'text'}"
+             placeholder="${f.placeholder || ''}"
+             value="${f.value !== undefined ? escapeHtml(String(f.value)) : ''}"
+             ${f.step ? `step="${f.step}"` : ''}>
+      ${f.helper ? `<div class="helper">${escapeHtml(f.helper)}</div>` : ''}
+    </div>
+  `).join('');
+  actions.innerHTML = `
+    <button type="button" class="btn" data-trocar>← Trocar produto</button>
+    <button type="button" class="btn primary" data-executar>Confirmar</button>
+  `;
+  setTimeout(() => {
+    const inp = body.querySelector('input');
+    if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+  }, 60);
+}
+
+function renderConfirmacao(cfg, produto) {
+  const body = document.getElementById('modal-body');
+  const actions = document.getElementById('modal-actions');
+  const q = +produto.quantidade;
+  const preco = produto.preco ? `R$ ${(+produto.preco).toFixed(2).replace('.', ',')}` : '—';
+  body.innerHTML = `
+    ${badgeProdutoSelecionado(produto)}
+    <div class="danger-warning">
+      <strong>⚠ ATENÇÃO</strong>
+      Esta ação é irreversível. O produto será removido permanentemente do estoque.
+    </div>
+    <div class="detail-grid">
+      <div class="detail-cell">
+        <div class="cell-label">Quantidade atual</div>
+        <div class="cell-value">${q}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="cell-label">Preço unitário</div>
+        <div class="cell-value small">${preco}</div>
+      </div>
+    </div>
+  `;
+  actions.innerHTML = `
+    <button type="button" class="btn" data-trocar>← Trocar produto</button>
+    <button type="button" class="btn danger" data-executar>Confirmar exclusão</button>
+  `;
+}
+
+function renderDetalhe(produto) {
+  const body = document.getElementById('modal-body');
+  const actions = document.getElementById('modal-actions');
+  const q = +produto.quantidade;
+  const status = q === 0 ? 'crit' : q < 5 ? 'low' : '';
+  const statusTxt = q === 0 ? 'CRÍTICO' : q < 5 ? 'ATENÇÃO' : 'OK';
+  const preco = produto.preco ? `R$ ${(+produto.preco).toFixed(2).replace('.', ',')}` : '—';
+  const valorTotal = produto.preco ? `R$ ${((+produto.preco) * q).toFixed(2).replace('.', ',')}` : '—';
+  body.innerHTML = `
+    <div class="detail-name">${escapeHtml(produto.nome)}</div>
+    <div class="detail-sku">SKU · ${gerarSKU(produto.nome)} · STATUS: ${statusTxt}</div>
+    <div class="detail-grid">
+      <div class="detail-cell">
+        <div class="cell-label">Quantidade</div>
+        <div class="cell-value ${status}">${q}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="cell-label">Preço unitário</div>
+        <div class="cell-value small">${preco}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="cell-label">Categoria</div>
+        <div class="cell-value small">${produto.categoria || 'GERAL'}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="cell-label">Valor em estoque</div>
+        <div class="cell-value small">${valorTotal}</div>
+      </div>
+    </div>
+  `;
+  actions.innerHTML = `
+    <button type="button" class="btn" data-trocar>← Voltar</button>
+    <button type="button" class="btn primary" data-fechar>Fechar</button>
+  `;
+  registrar(`Consulta: <strong>${produto.nome}</strong>`);
+}
+
+function executarAcao() {
+  const cfg = ACOES[acaoAtual];
+  if (cfg.fluxo === 'form') {
+    const dados = {}; let faltando = null;
+    cfg.fields.forEach(f => {
+      const v = document.getElementById('f-' + f.id)?.value.trim() || '';
+      if (!v && !faltando) faltando = f.label;
+      dados[f.id] = v;
+    });
+    if (faltando) { toast(`Preencha: ${faltando}`, true); return; }
+    const ok = cfg.submit(dados);
+    if (ok) { toast(cfg.success); fecharModal(); } else { toast(cfg.fail, true); }
+    return;
+  }
+  const produto = produtos[modalProdutoIndex];
+  if (!produto) { toast("Produto não encontrado.", true); return; }
+  if (cfg.fluxo === 'select-then-form') {
+    const dados = {};
+    cfg.buildForm(produto).forEach(f => {
+      dados[f.id] = document.getElementById('f-' + f.id)?.value.trim() ?? '';
+    });
+    const ok = cfg.submit(produto, dados);
+    if (ok) { toast(cfg.success); fecharModal(); } else { toast(cfg.fail, true); }
+    return;
+  }
+  if (cfg.fluxo === 'select-then-confirm') {
+    const ok = cfg.confirmar(produto);
+    if (ok) { toast(cfg.success); fecharModal(); } else { toast(cfg.fail, true); }
+  }
+}
+
+function voltarParaSelecao() {
+  modalEtapa = 'selecao'; modalProdutoIndex = -1;
+  renderSelecaoProduto(ACOES[acaoAtual]);
+}
 function fecharModal() {
   document.getElementById('modal').classList.remove('active');
-  acaoAtual = null;
+  document.getElementById('modal-box').classList.remove('large');
+  acaoAtual = null; modalEtapa = 'selecao'; modalProdutoIndex = -1;
 }
 
-function executarAcao(e) {
-  e.preventDefault();
-  const cfg = modais[acaoAtual];
-  const dados = {};
-  cfg.fields.forEach(f => { dados[f.id] = document.getElementById('f-' + f.id).value.trim(); });
-  const resultado = cfg.submit(dados);
-  if (resultado === null) return false;
-  if (resultado) { toast(cfg.success); fecharModal(); }
-  else { toast(cfg.fail); }
-  return false;
-}
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-acao]');
+  if (btn) { abrirModal(btn.dataset.acao); return; }
+  if (e.target.closest('[data-fechar]'))    { fecharModal(); return; }
+  if (e.target.closest('[data-executar]'))  { executarAcao(); return; }
+  if (e.target.closest('[data-trocar]'))    { voltarParaSelecao(); return; }
+  if (e.target.id === 'modal')              { fecharModal(); }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') fecharModal();
+});
 
-/* ═══════════════════════════════════════════════════════════
-   TOAST
-   ═══════════════════════════════════════════════════════════ */
 let toastTimer;
-function toast(msg) {
+function toast(msg, erro = false) {
   const t = document.getElementById('toast');
   document.getElementById('toast-msg').innerHTML = msg;
+  t.classList.toggle('error', erro);
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   INIT
-   ═══════════════════════════════════════════════════════════ */
 registrar("Sistema iniciado. Estoque carregado.");
 atualizarTudo();
 </script>
