@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Estoque · Sistema Operacional</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /*html e script feitos com ia apenas para demonstração, já funcional porem sem db
+  autenticação, integração, etc*/
+
+  :root {
+    --bg-deep:      #0A0C0E;
+    --bg-panel:     #111417;
+    --bg-elevated:  #191D21;
+    --bg-hover:     #21262C;
+    --border-subtle: #1F242A;
+    --border-active: #2C333B;
+    --text-primary: #EAECEE;
+    --text-muted:   #8B929A;
+    --text-dim:     #545B63;
+    --accent:        #6EE7A0
+    --accent-dim:    #3D9B6A;
+    --accent-glow:   rgba(110, 231, 160, 0.08)
+    --state-warn: #C9A96E
+    --state-crit: #C96E6E
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 40px 48px 64px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 80% 0%, rgba(110, 231, 160, 0.03), transparent),
+      radial-gradient(ellipse 40% 60% at 0% 100%, rgba(110, 231, 160, 0.02), transparent);
+    background-attachment: fixed;
+  }
+
+  .header {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 64px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 40px;
+    align-items: end;
+  }
+
+  .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-mark {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 16px var(--accent-glow);
+  }
+
+  .headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 44px;
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .headline em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .subheadline {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    max-width: 380px;
+    font-weight: 400;
+  }
+
+
+  .hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    padding: 32px 0;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .hero-metric .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .hero-metric .value {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .hero-metric .value.accent { color: var(--accent); }
+
+  .hero-metric .trend {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* ═══════════ AÇÕES (Botões Principais) ═══════════ */
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--border-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .action-btn {
+    background: var(--bg-panel);
+    border: none;
+    padding: 22px 20px;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+
+  .action-btn:hover {
+    background: var(--bg-elevated);
+  }
+
+  .action-btn:hover .action-icon {
+    color: var(--accent);
+  }
+
+  .action-icon {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    transition: color 0.2s ease;
+  }
+
+  .action-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: var(--text-primary);
+    font-weight: 400;
+  }
+
+  .action-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .action-btn.primary {
+    background: var(--accent-glow);
+    border-right: 1px solid rgba(110, 231, 160, 0.15);
+  }
+
+  .action-btn.primary .action-icon {
+    color: var(--accent);
+  }
+
+  .action-btn.primary:hover {
+    background: rgba(110, 231, 160, 0.12);
+  }
+
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 24px;
+  }
+
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .panel-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .panel-live {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .products-head {
+    display: grid;
+    grid-template-columns: 2.4fr 1.1fr 0.8fr 1fr 0.7fr;
+    gap: 16px;
+    padding: 14px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .product-row {
+    display: grid;
+    grid-template-columns: 2.4fr 1.1fr 0.8fr 1fr 0.7fr;
+    gap: 16px;
+    padding: 18px 28px;
+    align-items: center;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background 0.15s;
+  }
+
+  .product-row:hover {
+    background: var(--bg-elevated);
+  }
+
+  .product-row:last-child { border-bottom: none; }
+
+  .product-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .product-sku {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  .product-category {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .product-qty {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--text-primary);
+    text-align: right;
+    font-weight: 400;
+  }
+
+  .product-qty.low { color: var(--state-warn); }
+  .product-qty.crit { color: var(--state-crit); }
+
+  .product-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    letter-spacing: 0.05em;
+  }
+
+  .product-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: right;
+    color: var(--text-dim);
+  }
+
+  .product-status.ok { color: var(--accent-dim); }
+  .product-status.low { color: var(--state-warn); }
+  .product-status.crit { color: var(--state-crit); }
+
+  /* ═══════════ LOG ═══════════ */
+  .log-feed {
+    padding: 20px 28px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 2;
+    color: var(--text-muted);
+    max-height: 340px;
+    overflow-y: auto;
+  }
+
+  .log-feed::-webkit-scrollbar { width: 3px; }
+  .log-feed::-webkit-scrollbar-thumb { background: var(--border-active); }
+
+  .log-line {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 16px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .log-line:last-child { border-bottom: none; }
+
+  .log-time {
+    color: var(--text-dim);
+    font-size: 10px;
+  }
+
+  .log-text strong {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  /* ═══════════ MODAL ═══════════ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 7, 9, 0.8);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-active);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 460px;
+    padding: 40px;
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    font-weight: 400;
+    color: var(--text-primary);
+    margin-bottom: 32px;
+    line-height: 1.2;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--bg-deep);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 14px 16px;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .field input:focus {
+    border-color: var(--accent);
+    background: #0D0F12;
+  }
+
+  .field input::placeholder {
+    color: var(--text-dim);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 36px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-active);
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    color: #0A0C0E;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .btn.primary:hover {
+    background: #8FFFB8;
+    border-color: #8FFFB8;
+  }
+
+
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-active);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 16px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+    z-index: 2000;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+  <header class="header">
+    <div>
+      <div class="brand">
+        <span class="brand-mark"></span>
+        ESTOQUE · SISTEMA OPERACIONAL
+      </div>
+      <h1 class="headline">
+        Operação <em>estável</em>.<br>
+        Controle total, em tempo real.
+      </h1>
+    </div>
+    <div class="subheadline">
+      Monitore, adicione e remova produtos com precisão. Cada ação é registrada e refletida instantaneamente nos indicadores.
+    </div>
+  </header>
+
+  <section class="hero-metrics">
+    <div class="hero-metric">
+      <div class="label">Total de itens</div>
+      <div class="value" id="metric-itens">0</div>
+      <div class="trend">unidades em estoque</div>
+    </div>
+    <div class="hero-metric">
+      <div class="label">Valor em estoque</div>
+      <div class="value" id="metric-valor">R$ 0</div>
+      <div class="trend">soma de preços × quantidade</div>
+    </div>
+    <div class="hero-metric">
+      <div class="label">Itens em atenção</div>
+      <div class="value accent" id="metric-atencao">0</div>
+      <div class="trend">abaixo do mínimo (5 un.)</div>
+    </div>
+  </section>
+
+  <nav class="actions">
+    <button class="action-btn primary" onclick="abrirModal('adicionar')">
+      <span class="action-icon">01 / ADICIONAR</span>
+      <span class="action-label">Novo produto</span>
+      <span class="action-hint">Entrada de estoque</span>
+    </button>
+    <button class="action-btn" onclick="abrirModal('alterar')">
+      <span class="action-icon">02 / ALTERAR</span>
+      <span class="action-label">Editar produto</span>
+      <span class="action-hint">Nome / quantidade</span>
+    </button>
+    <button class="action-btn" onclick="abrirModal('retirar')">
+      <span class="action-icon">03 / RETIRAR</span>
+      <span class="action-label">Saída de estoque</span>
+      <span class="action-hint">Baixa de item</span>
+    </button>
+    <button class="action-btn" onclick="abrirModal('buscar')">
+      <span class="action-icon">04 / BUSCAR</span>
+      <span class="action-label">Localizar item</span>
+      <span class="action-hint">Consulta por nome</span>
+    </button>
+    <button class="action-btn" onclick="abrirModal('deletar')">
+      <span class="action-icon">05 / DELETAR</span>
+      <span class="action-label">Remover produto</span>
+      <span class="action-hint">Ação irreversível</span>
+    </button>
+  </nav>
+
+  
+  <div class="grid">
+
+
+    <section class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Produtos em estoque</span>
+        <span class="panel-live">Atualizado agora</span>
+      </div>
+      <div class="products-head">
+        <span>Produto</span>
+        <span>Categoria</span>
+        <span style="text-align:right">Qtd</span>
+        <span style="text-align:right">Preço</span>
+        <span style="text-align:right">Status</span>
+      </div>
+      <div id="lista-produtos"></div>
+    </section>
+
+    <!-- DIREITA: LOG -->
+    <aside class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Log de operações</span>
+      </div>
+      <div class="log-feed" id="log-feed"></div>
+    </aside>
+
+  </div>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-eyebrow" id="modal-eyebrow">AÇÃO</div>
+      <h2 class="modal-title" id="modal-title">Título</h2>
+      <form id="modal-form" onsubmit="return executarAcao(event)">
+        <div id="modal-fields"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn" onclick="fecharModal()">Cancelar</button>
+          <button type="submit" class="btn primary" id="modal-confirmar">Confirmar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ESTADO — espelha o ControleDeEstoque.py
+   ═══════════════════════════════════════════════════════════ */
+let produtos = [
+  { nome: "Teclado Mecânico RGB", quantidade: 48, preco: 289.90, categoria: "Periféricos" },
+  { nome: "Mouse Sem Fio Pro",    quantidade: 62, preco: 149.90, categoria: "Periféricos" },
+  { nome: 'Monitor 27" 4K',       quantidade: 4,  preco: 2890.00, categoria: "Hardware" },
+  { nome: "Cabo HDMI 2.1",        quantidade: 210,preco: 39.90,  categoria: "Acessórios" },
+  { nome: "SSD NVMe 1TB",         quantidade: 3,  preco: 749.00, categoria: "Hardware" },
+  { nome: "Webcam Full HD",       quantidade: 25, preco: 249.90, categoria: "Periféricos" },
+];
+
+let logEntries = [];
+
+/* ═══════════════════════════════════════════════════════════
+   AÇÕES (equivalentes ao Controller Python)
+   ═══════════════════════════════════════════════════════════ */
+function adicionarProduto(nome, quantidade, preco, categoria) {
+  if (buscarProduto(nome)) { toast("Produto já existe. Use 'Alterar'."); return false; }
+  produtos.push({ nome, quantidade, preco, categoria });
+  registrar(`Entrada: <strong>${nome}</strong> +${quantidade} un.`);
+  return true;
+}
+
+function buscarProduto(nome) {
+  return produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase()) || null;
+}
+
+function alterarEstoque(nome, novoNome, novaQuantidade) {
+  const p = buscarProduto(nome);
+  if (!p) return false;
+  p.nome = novoNome;
+  p.quantidade = novaQuantidade;
+  registrar(`Alteração: <strong>${nome}</strong> → ${novoNome} (${novaQuantidade} un.)`);
+  return true;
+}
+
+function retirarProduto(nome, quantidade) {
+  const p = buscarProduto(nome);
+  if (!p || quantidade > p.quantidade) return false;
+  p.quantidade -= quantidade;
+  registrar(`Saída: <strong>${nome}</strong> −${quantidade} un.`);
+  return true;
+}
+
+function deletarProduto(nome) {
+  const p = buscarProduto(nome);
+  if (!p) return false;
+  produtos = produtos.filter(x => x !== p);
+  registrar(`Removido: <strong>${nome}</strong>`);
+  return true;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDERIZAÇÃO
+   ═══════════════════════════════════════════════════════════ */
+function renderProdutos() {
+  const el = document.getElementById('lista-produtos');
+  if (produtos.length === 0) {
+    el.innerHTML = `<div style="padding:56px 28px;text-align:center;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;">ESTOQUE VAZIO</div>`;
+    return;
+  }
+  el.innerHTML = produtos.map(p => {
+    const status = p.quantidade === 0 ? 'crit' : p.quantidade < 5 ? 'low' : 'ok';
+    const statusTxt = status === 'crit' ? 'CRÍTICO' : status === 'low' ? 'ATENÇÃO' : 'OK';
+    return `
+      <div class="product-row">
+        <div>
+          <div class="product-name">${p.nome}</div>
+          <div class="product-sku">SKU · ${gerarSKU(p.nome)}</div>
+        </div>
+        <div class="product-category">${p.categoria}</div>
+        <div class="product-qty ${status !== 'ok' ? status : ''}">${p.quantidade}</div>
+        <div class="product-price">R$ ${p.preco.toFixed(2).replace('.', ',')}</div>
+        <div class="product-status ${status}">${statusTxt}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderLog() {
+  const el = document.getElementById('log-feed');
+  if (logEntries.length === 0) {
+    el.innerHTML = `<div style="color:var(--text-dim);font-size:10px;letter-spacing:0.1em;">NENHUMA OPERAÇÃO REGISTRADA</div>`;
+    return;
+  }
+  el.innerHTML = logEntries.slice(0, 20).map(e => `
+    <div class="log-line">
+      <span class="log-time">${e.hora}</span>
+      <span class="log-text">${e.texto}</span>
+    </div>
+  `).join('');
+}
+
+function renderMetricas() {
+  const total = produtos.reduce((s, p) => s + p.quantidade, 0);
+  const valor = produtos.reduce((s, p) => s + (p.preco * p.quantidade), 0);
+  const atencao = produtos.filter(p => p.quantidade < 5).length;
+
+  document.getElementById('metric-itens').textContent = total;
+  document.getElementById('metric-valor').textContent = 'R$ ' + Math.round(valor).toLocaleString('pt-BR');
+  document.getElementById('metric-atencao').textContent = atencao;
+}
+
+function registrar(texto) {
+  const agora = new Date();
+  const hora = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0') + ':' + String(agora.getSeconds()).padStart(2, '0');
+  logEntries.unshift({ hora, texto });
+  atualizarTudo();
+}
+
+function atualizarTudo() { renderProdutos(); renderLog(); renderMetricas(); }
+
+function gerarSKU(nome) {
+  let h = 0;
+  for (let c of nome) h = (h * 31 + c.charCodeAt(0)) % 10000;
+  return String(h).padStart(4, '0');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════════════════════════ */
+const modais = {
+  adicionar: {
+    eyebrow: "01 · ADICIONAR", title: "Cadastrar novo produto",
+    fields: [
+      { id: 'nome',      label: 'Nome',       placeholder: 'Ex: Headset Gamer' },
+      { id: 'quantidade',label: 'Quantidade', placeholder: 'Ex: 50', type: 'number' },
+      { id: 'preco',     label: 'Preço (R$)', placeholder: 'Ex: 249.90', type: 'number', step: '0.01' },
+      { id: 'categoria', label: 'Categoria',  placeholder: 'Ex: Periféricos' },
+    ],
+    submit: (d) => adicionarProduto(d.nome, +d.quantidade, +d.preco, d.categoria),
+    success: "Produto adicionado.", fail: "Produto já existe."
+  },
+  alterar: {
+    eyebrow: "02 · ALTERAR", title: "Editar produto existente",
+    fields: [
+      { id: 'nome',           label: 'Nome atual',      placeholder: 'Ex: Mouse Sem Fio Pro' },
+      { id: 'novoNome',       label: 'Novo nome',       placeholder: 'Deixe igual se não mudar' },
+      { id: 'novaQuantidade', label: 'Nova quantidade', placeholder: 'Ex: 100', type: 'number' },
+    ],
+    submit: (d) => alterarEstoque(d.nome, d.novoNome || d.nome, +d.novaQuantidade),
+    success: "Produto alterado.", fail: "Produto não encontrado."
+  },
+  retirar: {
+    eyebrow: "03 · RETIRAR", title: "Registrar saída de estoque",
+    fields: [
+      { id: 'nome',       label: 'Produto',       placeholder: 'Ex: SSD NVMe 1TB' },
+      { id: 'quantidade', label: 'Qtd a retirar', placeholder: 'Ex: 2', type: 'number' },
+    ],
+    submit: (d) => retirarProduto(d.nome, +d.quantidade),
+    success: "Saída registrada.", fail: "Produto não encontrado ou quantidade insuficiente."
+  },
+  buscar: {
+    eyebrow: "04 · BUSCAR", title: "Localizar produto",
+    fields: [{ id: 'nome', label: 'Nome', placeholder: 'Digite o nome completo' }],
+    submit: (d) => {
+      const p = buscarProduto(d.nome);
+      if (!p) return false;
+      toast(`${p.nome} · ${p.quantidade} un. · R$ ${p.preco.toFixed(2)}`);
+      registrar(`Consulta: <strong>${p.nome}</strong>`);
+      return null;
+    },
+    success: "", fail: "Produto não encontrado."
+  },
+  deletar: {
+    eyebrow: "05 · DELETAR", title: "Remover produto do estoque",
+    fields: [{ id: 'nome', label: 'Nome do produto', placeholder: 'Ex: Cabo HDMI 2.1' }],
+    submit: (d) => deletarProduto(d.nome),
+    success: "Produto removido.", fail: "Produto não encontrado."
+  
+  }
+}
+
+let acaoAtual = null;
+
+function abrirModal(tipo) {
+  acaoAtual = tipo;
+  const cfg = modais[tipo];
+  document.getElementById('modal-eyebrow').textContent = cfg.eyebrow;
+  document.getElementById('modal-title').textContent = cfg.title;
+
+  document.getElementById('modal-fields').innerHTML = cfg.fields.map(f => `
+    <div class="field">
+      <label for="f-${f.id}">${f.label}</label>
+      <input id="f-${f.id}" type="${f.type || 'text'}" placeholder="${f.placeholder}"
+             ${f.step ? `step="${f.step}"` : ''} required>
+    </div>
+  `).join('');
+
+  document.getElementById('modal').classList.add('active');
+  setTimeout(() => document.querySelector('#modal-fields input')?.focus(), 50);
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('active');
+  acaoAtual = null;
+}
+
+function executarAcao(e) {
+  e.preventDefault();
+  const cfg = modais[acaoAtual];
+  const dados = {};
+  cfg.fields.forEach(f => { dados[f.id] = document.getElementById('f-' + f.id).value.trim(); });
+  const resultado = cfg.submit(dados);
+  if (resultado === null) return false;
+  if (resultado) { toast(cfg.success); fecharModal(); }
+  else { toast(cfg.fail); }
+  return false;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════════════════════════ */
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').innerHTML = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════ */
+registrar("Sistema iniciado. Estoque carregado.");
+atualizarTudo();
+</script>
+</body>
+</html>
